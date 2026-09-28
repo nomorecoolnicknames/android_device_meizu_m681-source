@@ -1,0 +1,7 @@
+type batterywarning, domain;
+
+init_daemon_domain(batterywarning)
+
+r_dir_file(batterywarning, system_file)
+r_dir_file(batterywarning, sysfs_type)
+allow batterywarning sysfs_batteryinfo:file r_file_perms;

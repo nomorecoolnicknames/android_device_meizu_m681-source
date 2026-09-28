@@ -1,0 +1,33 @@
+# Goodix GF516M fingerprint daemon (m681) -- installed to /system/etc/init.
+#
+# Deliberately NOT a ramdisk file.  rootdir/init.rc (where this stanza used to
+# sit) is absent from PRODUCT_COPY_FILES -- the ramdisk ships the platform
+# init.rc -- so a service declared there has never reached any image; and the
+# boot.img on the field device reuses an old ramdisk anyway (the repack path
+# replaces only the kernel).  Any init since Oreo parses /system/etc/init
+# after mount; proven on the field image itself: vendor.fps_hal starts from
+# its own rc under /system/vendor/etc/init.
+#
+# Stanza matches stock Flyme (boot/ramdisk/init.rc:759): class main,
+# user/group system.  The fingerprintd domain still exists in Pie sepolicy
+# (system/sepolicy/{public,private}/fingerprintd.te) and the device rules in
+# sepolicy/fingerprintd.te grant it the goodix and mobicore devices.
+# /dev/goodix_fp perms (0660 system system) come from ueventd.mt6755.rc:44.
+service goodixfpd /system/bin/goodixfingerprintd
+    class main
+    user system
+    group system
+    seclabel u:r:fingerprintd:s0
+
+# Boot-order self-heal.  vendor.fps_hal (class hal) starts before class main,
+# and AOSP's fingerprint@2.0-service runs openHal() exactly once at startup:
+# if goodixfpd has not registered IGoodixFingerprintDaemon within the ~5 s
+# ServiceManager wait, the HAL process stays alive but empty ("Fingerprint
+# HAL id: 0") for the entire boot -- it never retries.  Restarting the HAL
+# after the daemon is up forces a fresh openHal(), and the framework's
+# death-recipient reconnect then re-reads it.  This exact sequence (daemon up,
+# then HAL restart, then framework reconnect) is what opened the HAL live on
+# 2026-07-29.  Also self-heals a mid-session goodixfpd crash: the respawned
+# daemon re-triggers this and the HAL drops its stale binder proxy.
+on property:init.svc.goodixfpd=running
+    restart vendor.fps_hal

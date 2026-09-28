@@ -1,0 +1,119 @@
+#
+# ADDITIONAL_DEFAULT_PROPERTIES
+#
+ro.adb.secure=0
+ro.hardware.gralloc=mt6755
+persist.service.acm.enable=0
+ro.secure=0
+ro.allow.mock.location=0
+ro.debuggable=1
+ro.zygote=zygote64_32
+persist.sys.adb.shell=/sbin/sh
+persist.sys.usb.config=adb
+persist.service.adb.enable=1
+qemu.hw.mainkeys=0
+# Current physical-image profile: keep the HWC baseline that reaches Android.
+# The forced internal-fbdev isolation proved the panel accepts writes, but it
+# corrupts geometry/stride on the physical display and must not ship.
+ro.sf.hwrotation=0
+# 2026-07-12: zygote GL preload opens an unwhitelisted /proc/ged fd -> forkSystemServer
+# SIGABRT ("Not whitelisted : /proc/ged" -> Unable to construct file descriptor table).
+# ro.zygote.disable_gl_preload via PRODUCT_SYSTEM_DEFAULT_PROPERTIES landed in
+# /system/etc/prop.default which init does NOT load on m681 (getprop empty); the ramdisk
+# default.prop IS loaded (ro.zygote works from here), so set it here too. Live-verified.
+ro.zygote.disable_gl_preload=true
+# 2026-07-12: this ramdisk default.prop carries STALE Nougat pm.dexopt reason names
+# (nsys-library/shared-apk/...) and is MISSING the Oreo reasons pm.dexopt.inactive and
+# pm.dexopt.shared. The correct Oreo set is in /system/etc/prop.default (which init does
+# NOT load on m681), so those two are empty at runtime -> PackageManagerServiceCompilerMapping
+# .checkProperties throws "PMS compiler filter settings are bad" -> system_server SIGABRT,
+# no boot_completed. Add the two missing reasons here (ramdisk default.prop IS loaded).
+pm.dexopt.inactive=verify
+pm.dexopt.shared=speed
+debug.sf.force_fbdev=0
+debug.sf.force_screen_on=0
+debug.sf.disable_hwc=0
+debug.sf.disable_hwc_vds=0
+debug.sf.no_hw_fences=0
+debug.sf.no_hw_vsync=0
+debug.sf.hwc_set_diag=0
+debug.sf.skip_hwc_set=0
+debug.sf.skip_hwc_fbt_only=0
+debug.sf.internal_fbdev=0
+debug.sf.internal_fbdev_keep_on=0
+debug.sf.internal_fbdev_write=0
+debug.sf.intfb_copy_all=0
+debug.sf.intfb_sync_period=0
+debug.sf.internal_fbdev_marker=0
+debug.sf.internal_fbdev_overlay=0
+debug.sf.internal_fbdev_meta=0
+debug.sf.intfb_period=0
+debug.sf.fb_force_bl=0
+debug.sf.mtkfb_kick=0
+debug.sf.hwc_set_limit=0
+debug.sf.hwc_set_period=0
+debug.sf.nobootanimation=0
+persist.m681.bootdiag=1
+persist.m681.cam.no_torch=0
+persist.m681.camera.safe_params=0
+persist.m681.disable_colorfade=1
+persist.m681.modem.autostart=0
+ro.telephony.default_network=10,10
+persist.m681.ril.no_ia=1
+service.bootanim.exit=0
+sys.ipo.inlogo=0
+debug.hwc.trigger_by_vsync=1
+ro.sf.hwvsync.disable=0
+debug.sf.sw_vsync_fps=60
+ro.sf.triplebuf.disable=0
+ro.mtk_perf_fast_start_win=0
+ro.mount.fs=EXT4
+camera.disable_zsl_mode=1
+camera.zsdmode=0
+persist.m681.cam.no_fullraw=1
+persist.m681.cam.p1path=2
+persist.m681.cam.pre_p1magic=1
+persist.m681.cam.sync_tuning=1
+debug.featurepipe.enable=0
+debug.tworunpass2.enable=0
+debug.lowPowerVR.enable=0
+debug.pass1.pdafon=0
+debug.pass1.rawtype=0
+debug.forceFPS.enable=0
+debug.mtk_cam_zsdmfb_support=0
+debug.mtk_cam_zsdhdr_support=0
+debug.camera.vfb.disable=1
+debug.camera.eis.disable=1
+debug.eis.EMEnabled=0
+debug.eis.dump=0
+debug.eisDrv.dump=0
+debug.eis.disable=1
+persist.camera.eis.enable=0
+persist.camera.eis.disable=1
+persist.camera.vfb.enable=0
+persist.camera.vfb.disable=1
+cam.dumpnpipelog.enable=0
+camera.featurepipe.dumpvfb=0
+dalvik.vm.image-dex2oat-Xms=64m
+dalvik.vm.image-dex2oat-Xmx=64m
+dalvik.vm.dex2oat-Xms=64m
+dalvik.vm.dex2oat-Xmx=512m
+pm.dexopt.first-boot=verify-at-runtime
+pm.dexopt.boot=verify-at-runtime
+pm.dexopt.install=interpret-only
+pm.dexopt.bg-dexopt=speed-profile
+pm.dexopt.ab-ota=speed-profile
+pm.dexopt.nsys-library=speed
+pm.dexopt.shared-apk=speed
+pm.dexopt.forced-dexopt=speed
+pm.dexopt.core-app=speed
+ro.dalvik.vm.native.bridge=0
+
+# 2026-08-25 (Treble stage A): restored.  The boot image flashed until today
+# carried this LTE property in its ramdisk default.prop, and LTE is
+# device-verified working with it present (matrix row 13).  It was NOT in this
+# tree, so the stage-A rebuild silently dropped it -- caught by the bake gate
+# that has counted this string in every image of this lane.  Whether the RIL
+# actually reads it is unproven; carrying it forward preserves a verified
+# working state instead of testing that question during a partition change.
+ro.boot.opt_lte_support=1

@@ -1,0 +1,54 @@
+# M681 camera runtime properties. The canonical cameraserver service lives in
+# /system/etc/init/cameraserver.rc and already carries the libdpcompat
+# LD_PRELOAD; do not define a second service here or Android init will ignore
+# one duplicate service definition during late /system rc parsing.
+
+on init
+    setprop persist.m681.camera.preload libdpcompat.so
+    setprop persist.m681.cam.no_torch 0
+    setprop persist.m681.camera.safe_params 1
+    setprop persist.m681.cam.safe 1
+    setprop persist.m681.cam.skip_set 1
+    setprop persist.m681.cam.force640 0
+    setprop persist.m681.cam.no_fullraw 1
+    setprop persist.m681.cam.p1path 1
+    setprop persist.m681.cam.pre_p1magic 1
+    setprop persist.m681.cam.sync_tuning 1
+    setprop persist.m681.cam.deq_retry 0
+    setprop persist.m681.cam.stop_wake 1
+    setprop persist.m681.cam.stop_fail 0
+    setprop persist.m681.cam.stop_wait_ms 300
+    setprop persist.m681.cam.frame_fallback 1
+    setprop persist.m681.cam.key_pending 1
+    setprop persist.m681.cam.frame_stale 0
+    setprop persist.m681.cam.ring_deque 0
+    setprop camera.disable_zsl_mode 1
+    setprop camera.zsdmode 0
+    setprop debug.featurepipe.enable 0
+    setprop debug.tworunpass2.enable 0
+    setprop debug.lowPowerVR.enable 0
+    setprop debug.forceFPS.enable 0
+    setprop debug.pass1.pdafon 0
+    setprop debug.pass1.rawtype 0
+    setprop debug.mtk_cam_zsdmfb_support 0
+    setprop debug.mtk_cam_zsdhdr_support 0
+    setprop debug.camera.vfb.disable 1
+    setprop debug.camera.eis.disable 1
+    setprop debug.eis.EMEnabled 0
+    setprop debug.eis.dump 0
+    setprop debug.eisDrv.dump 0
+    setprop debug.eis.disable 1
+    setprop persist.camera.eis.enable 0
+    setprop persist.camera.eis.disable 1
+    setprop persist.camera.vfb.enable 0
+    setprop persist.camera.vfb.disable 1
+    setprop cam.dumpnpipelog.enable 0
+    setprop camera.featurepipe.dumpvfb 0
+
+on property:sys.boot_completed=1
+    setprop persist.m681.cam.no_torch 0
+    setprop persist.m681.cam.force640 0
+    exec - root root -- /system/bin/pm grant net.sourceforge.opencamera android.permission.CAMERA
+    exec - root root -- /system/bin/pm grant net.sourceforge.opencamera android.permission.RECORD_AUDIO
+    exec - root root -- /system/bin/pm grant net.sourceforge.opencamera android.permission.READ_EXTERNAL_STORAGE
+    exec - root root -- /system/bin/pm grant net.sourceforge.opencamera android.permission.WRITE_EXTERNAL_STORAGE

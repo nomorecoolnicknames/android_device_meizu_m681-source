@@ -1,0 +1,11 @@
+# forge: see /system/bin/forge-ril-kick.sh for why this exists and when to
+# delete it. Runs once per boot, oneshot, and self-limits to 10 minutes.
+service forge-ril-kick /system/bin/sh /system/bin/forge-ril-kick.sh
+    class late_start
+    user root
+    group root radio
+    oneshot
+    disabled
+
+on property:sys.boot_completed=1
+    start forge-ril-kick

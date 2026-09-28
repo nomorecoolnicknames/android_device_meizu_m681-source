@@ -1,0 +1,27 @@
+// libsfleaktrack - LD_PRELOAD instrument for the SurfaceFlinger graphics-buffer
+// leak (docs/LANE_SF_BUFFER_LEAK_20260729.md).
+//
+// NOT in PRODUCT_PACKAGES on purpose: it is a diagnostic, built on demand with
+// `m libsfleaktrack` and placed by hand, so a normal ROM build never ships it.
+// It is inert unless surfaceflinger is started with LD_PRELOAD pointing at it
+// AND debug.sfleak.enable is 1.
+cc_library_shared {
+    name: "libsfleaktrack",
+
+    srcs: ["sfleaktrack.cpp"],
+
+    shared_libs: [
+        "libcutils",
+        "liblog",
+    ],
+
+    // surfaceflinger on m681 is 64-bit only (209 /system/lib64 mappings, zero
+    // /system/lib), so a 32-bit variant would be dead weight.
+    compile_multilib: "64",
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-parameter",
+    ],
+}

@@ -1,0 +1,2 @@
+# Minimal bring-up stub.
+# Deliberately leave IMS/MAL userspace disabled until the base system boots.

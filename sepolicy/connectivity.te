@@ -1,0 +1,24 @@
+allow init device:chr_file { create setattr };
+allow init stpwmt_device:chr_file rw_file_perms;
+allow init stpbt_device:chr_file rw_file_perms;
+allow ueventd stpbt_device:chr_file relabelto;
+allow init wmtWifi_device:chr_file rw_file_perms;
+allow system_server wmtWifi_device:chr_file rw_file_perms;
+
+allow ueventd device:chr_file relabelfrom;
+allow ueventd wmtWifi_device:chr_file relabelto;
+
+r_dir_file(kernel, nvdata_file)
+
+# Build Station 15.1 port: the cm-14.1 `gpsd` SELinux domain does not exist in
+# LineageOS 15.1 (Oreo) — checkpolicy: "unknown type gpsd". meizu_m6 ships no
+# gpsd rules and builds clean, so the stale `allow gpsd nvcfg_file ...` rules are
+# dropped here. GPS nvcfg access in Oreo is governed by the actual mnld/location
+# daemon domain; re-add under the correct 15.1 domain if a runtime denial appears.
+
+# init chowns and restorecons /nvcfg in post-fs-data.
+allow init nvcfg_file:dir { read open getattr setattr search relabelfrom relabelto };
+allow init nvcfg_file:file { getattr setattr relabelfrom relabelto };
+allow bluetooth stpbt_device:chr_file rw_file_perms;
+allow bluetooth wmt_prop:file r_file_perms;
+allow system_server wmt_prop:file r_file_perms;

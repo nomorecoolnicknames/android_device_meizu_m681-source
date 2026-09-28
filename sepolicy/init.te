@@ -1,0 +1,2 @@
+allow init MTK_SMI_device:chr_file { getattr relabelfrom relabelto };
+allow init socket_device:sock_file { create setattr unlink };

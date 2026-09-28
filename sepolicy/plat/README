@@ -1,0 +1,11 @@
+LineageOS 15.1 sepolicy split — platform (system partition) side.
+
+In Oreo the build system routes BOARD_PLAT_SEPOLICY_DIRS into the
+platform policy compiled into /system/etc/selinux/plat_*.  This
+directory currently contains no device-specific platform overrides;
+all m681 policy additions live in the sibling flat files
+(../audioserver.te, ../cameraserver.te, etc.) which the build system
+continues to pick up via BOARD_SEPOLICY_DIRS.
+
+When a full Treble split is needed, move platform-only .te files here
+and vendor-only .te files to ../vendor/.

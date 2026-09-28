@@ -1,0 +1,6 @@
+# Build Station 15.1 port: /m4u is already labelled by the base 15.1 policy
+# (system/sepolicy/private/genfs_contexts: genfscon proc /m4u ... mtk_m4u_proc).
+# The cm-14.1 `proc_m4u` label here caused "duplicate genfs entry (proc, /m4u)".
+# Dropped; m681 allow rules now target the base mtk_m4u_proc type.
+# LOS 16.0: re-add — the Pie base policy no longer labels /m4u.
+genfscon proc /m4u u:object_r:mtk_m4u_proc:s0

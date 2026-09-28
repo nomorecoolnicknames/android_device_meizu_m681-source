@@ -1,0 +1,87 @@
+on init
+    mkdir /nvdata 0771 system system
+
+on post-fs-data
+    chown root system /nvdata
+    # MTK connectivity blobs open /nvdata/APCFG/APRDEB directly from bluetooth
+    # and kernel/WMT contexts. 2770 hides the tree from them and produced
+    # errno 13 on BT_Addr; keep traversal stock-like and restrict leaf files.
+    chmod 0771 /nvdata
+    symlink /nvdata /data/nvram
+    copy /fstab.mt6755 /nvdata/fstab.mt6755
+    chown root root /nvdata/fstab.mt6755
+    chmod 0644 /nvdata/fstab.mt6755
+    copy /fstab.mt6755 /data/nvram/fstab.mt6755
+    chown root root /data/nvram/fstab.mt6755
+    chmod 0644 /data/nvram/fstab.mt6755
+    restorecon /nvdata
+    restorecon /data/nvram
+    restorecon /custom
+    restorecon /protect_f
+    restorecon /protect_s
+    restorecon_recursive /nvdata
+    chown system system /nvdata/APCFG/APRDEB/WIFI
+    chmod 0660 /nvdata/APCFG/APRDEB/WIFI
+    chown bluetooth bluetooth /nvdata/APCFG/APRDEB/BT_Addr
+    chmod 0660 /nvdata/APCFG/APRDEB/BT_Addr
+    # MD_Type is a 4-byte APRDCL LID on this blob set. Early path is
+    # read-only; writes are only allowed after NvRAMAgent reports Ready.
+    setprop debug.m681.mdtype_fix.trigger post_fs_data_early
+    exec - root root -- /system/bin/sh /system/bin/m681_mdtype_fix.sh early
+
+# The MTK NVRAM daemon may repopulate /data/nvram on clean boot. Seed the
+# compatibility fstab again once it reports ready so legacy audio code can
+# still resolve the partition path it expects.
+on property:service.nvram_init=Ready
+    copy /fstab.mt6755 /nvdata/fstab.mt6755
+    chown root root /nvdata/fstab.mt6755
+    chmod 0644 /nvdata/fstab.mt6755
+    copy /fstab.mt6755 /data/nvram/fstab.mt6755
+    chown root root /data/nvram/fstab.mt6755
+    chmod 0644 /data/nvram/fstab.mt6755
+    restorecon /nvdata
+    restorecon /data/nvram
+    restorecon /custom
+    restorecon /protect_f
+    restorecon /protect_s
+    restorecon_recursive /nvdata
+    restorecon /nvdata/fstab.mt6755
+    restorecon /data/nvram/fstab.mt6755
+    setprop debug.m681.wifi_nvram_repair requested
+    exec u:r:init:s0 root system -- /system/bin/m681_nvram_wifi_repair
+    chown system system /nvdata/APCFG/APRDEB/WIFI
+    chmod 0660 /nvdata/APCFG/APRDEB/WIFI
+    chown bluetooth bluetooth /nvdata/APCFG/APRDEB/BT_Addr
+    chmod 0660 /nvdata/APCFG/APRDEB/BT_Addr
+    setprop debug.m681.mdtype_fix.trigger nvram_ready
+    start m681_mdtype_fix
+
+# M681: do not force RestoreFlag here. Blind writes can make the vendor restore
+# path recreate default APCFG records and clobber the Wi-Fi MAC. Keep this as a
+# marker only; m681_nvram_wifi_repair restores the mounted WIFI record from raw
+# nvram/nvdata after service.nvram_init=Ready if the mounted record is invalid.
+on property:service.nvram_init=Pre_Ready
+    setprop debug.m681.nvram.pre_ready 1
+
+service m681_mdtype_fix /system/bin/sh /system/bin/m681_mdtype_fix.sh
+    class late_start
+    user root
+    group root system radio
+    disabled
+    oneshot
+
+# Some MTK blobs only publish the ready property reliably after the one-shot
+# daemon exits through the stock init domain. Keep that behavior and mirror a
+# conservative fallback so audio does not hang forever if the daemon completed
+# but forgot to raise the property.
+on property:init.svc.nvram_daemon=stopped
+    setprop service.nvram_init Ready
+
+# Start NVRAM services in `on boot` instead of `on post-fs-data` to avoid
+# the binder NULL servicemanager race that produced
+# "binder_context_mgr_node is NULL" + "transaction failed 29189" in
+# earlier boots. servicemanager comes up between post-fs-data and boot,
+# so binder is ready when NvRAMAgent registers.
+on boot
+    start nvram_daemon
+    start NvRAMAgent

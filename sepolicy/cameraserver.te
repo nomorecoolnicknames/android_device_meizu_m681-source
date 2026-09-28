@@ -1,0 +1,15 @@
+allow cameraserver camera_isp_device:chr_file rw_file_perms;
+allow cameraserver cam_cal_device:chr_file rw_file_perms;
+allow cameraserver camera_device:chr_file rw_file_perms;
+allow cameraserver MTK_SMI_device:chr_file rw_file_perms;
+allow cameraserver mtk_m4u_proc:file rw_file_perms;
+allow cameraserver proc_meminfo:file r_file_perms;
+allow cameraserver sysfs_dev_info:file r_file_perms;
+allow cameraserver storage_file:dir search;
+allow cameraserver storage_file:lnk_file r_file_perms;
+allow cameraserver mnt_user_file:dir search;
+allow cameraserver sensorservice_service:service_manager find;
+get_prop(cameraserver, mtk_em_prop)
+get_prop(cameraserver, usp_srv_prop)
+r_dir_file(cameraserver, nvdata_file)
+allow cameraserver sysfs:file r_file_perms;

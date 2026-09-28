@@ -1,0 +1,4 @@
+# Keep framework-side concurrency probing from aborting Wi-Fi startup.
+ENABLE_STA_SAP_CONCURRENCY:0
+SAP_INTERFACE_NAME:ap0
+SAP_CHANNEL:6

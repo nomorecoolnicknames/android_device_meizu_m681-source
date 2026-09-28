@@ -1,0 +1,40 @@
+# MTK project .rc configure
+
+on post-fs-data
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+
+on init
+    mkdir /storage 0751 root sdcard_r
+    mkdir /storage/emulated 0555 root root
+    mkdir /mnt/runtime 0755 root root
+    mkdir /mnt/runtime/default 0755 root root
+    mkdir /mnt/runtime/default/emulated 0755 root root
+    mkdir /mnt/runtime/read 0755 root root
+    mkdir /mnt/runtime/read/emulated 0755 root root
+    mkdir /mnt/runtime/write 0755 root root
+    mkdir /mnt/runtime/write/emulated 0755 root root
+
+    mkdir /mnt/shell 0700 shell shell
+    chmod 0750 /mnt/shell
+    chown shell sdcard_r /mnt/shell
+
+    mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
+    mkdir /storage/sdcard1 0700 root root
+    symlink /storage/sdcard1 /mnt/sdcard2
+
+on fs
+    setprop ro.crypto.fuse_sdcard true
+
+# External removable storage still uses an older Mediatek sdcard wrapper syntax
+# that is incompatible with the 7.1 /system/bin/sdcard CLI in this tree.
+# Keep it disabled for bring-up so it doesn't spin in a restart loop.
+service fuse_sdcard1 /system/bin/true
+    class late_start
+    disabled
+
+service sdcard /system/bin/true
+    class late_start
+    disabled
+
+# Build Station: Android 8.1 storage mountpoint

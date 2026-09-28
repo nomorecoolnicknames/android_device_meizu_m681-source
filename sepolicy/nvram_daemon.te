@@ -1,0 +1,13 @@
+type nvram_daemon, domain;
+type nvram_daemon_exec, exec_type, file_type;
+init_daemon_domain(nvram_daemon)
+
+# nvram_daemon reads the raw nvram partition block device and
+# populates /data/nvram (nvdata_file). It publishes readiness via
+# service.nvram_init property (system_prop).
+allow nvram_daemon nvdata_file:dir create_dir_perms;
+allow nvram_daemon nvdata_file:file create_file_perms;
+allow nvram_daemon nvdata_device:blk_file { read write getattr open };
+
+# Allow nvram_daemon to set service.nvram_init=Ready
+set_prop(nvram_daemon, system_prop)

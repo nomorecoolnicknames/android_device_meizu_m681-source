@@ -1,0 +1,88 @@
+type ccci_fsd, domain;
+type ccci_mdinit, domain;
+type ccci_rpcd, domain;
+type emdlogger, domain;
+type flashlessd, domain;
+type gsm0710muxd, domain;
+type gsm0710muxdmd2, domain;
+type mdlogger, domain;
+type mtkrild, domain;
+type mtkrildmd2, domain;
+type permission_check, domain;
+type rilproxy, domain;
+type statusd, domain;
+type terservice, domain;
+type viarild, domain;
+
+init_daemon_domain(ccci_fsd)
+init_daemon_domain(ccci_mdinit)
+init_daemon_domain(ccci_rpcd)
+init_daemon_domain(emdlogger)
+init_daemon_domain(flashlessd)
+init_daemon_domain(gsm0710muxd)
+init_daemon_domain(gsm0710muxdmd2)
+init_daemon_domain(mdlogger)
+init_daemon_domain(mtkrild)
+init_daemon_domain(mtkrildmd2)
+init_daemon_domain(permission_check)
+init_daemon_domain(rilproxy)
+init_daemon_domain(statusd)
+init_daemon_domain(terservice)
+init_daemon_domain(viarild)
+
+set_prop(ccci_mdinit, mtk_md_prop)
+set_prop(ccci_mdinit, ril_active_md_prop)
+set_prop(ccci_mdinit, ctl_ccci_fsd_prop)
+set_prop(ccci_mdinit, ctl_ccci2_fsd_prop)
+set_prop(ccci_mdinit, ctl_ccci3_fsd_prop)
+set_prop(ccci_mdinit, ctl_ccci_rpcd_prop)
+set_prop(ccci_mdinit, ctl_ccci2_rpcd_prop)
+set_prop(ccci_mdinit, ctl_mdlogger_prop)
+set_prop(ccci_mdinit, ctl_gsm0710muxd_prop)
+set_prop(ccci_mdinit, ctl_gsm0710muxd-s_prop)
+set_prop(ccci_mdinit, ctl_gsm0710muxd-d_prop)
+set_prop(ccci_mdinit, ctl_gsm0710muxdmd2_prop)
+set_prop(ccci_mdinit, ctl_ril-proxy_prop)
+set_prop(ccci_mdinit, ctl_ril-daemon-mtk_prop)
+set_prop(ccci_mdinit, ctl_ril-daemon-s_prop)
+set_prop(ccci_mdinit, ctl_ril-daemon-d_prop)
+set_prop(ccci_mdinit, ctl_ril-daemon-md2_prop)
+set_prop(ccci_mdinit, ctl_viarild_prop)
+set_prop(ccci_mdinit, ctl_muxreport-daemon_prop)
+set_prop(ccci_mdinit, ctl_emdlogger1_prop)
+set_prop(ccci_mdinit, ctl_emdlogger2_prop)
+set_prop(ccci_mdinit, ctl_emdlogger3_prop)
+set_prop(ccci_mdinit, ctl_dualmdlogger_prop)
+set_prop(ccci_mdinit, ctl_emcsmdlogger_prop)
+set_prop(ccci_mdinit, ril_mux_report_case_prop)
+set_prop(ccci_mdinit, ril_cdma_report_prop)
+
+set_prop(statusd, mtk_md_prop)
+set_prop(gsm0710muxd, gsm0710muxd_prop)
+set_prop(gsm0710muxdmd2, gsm0710muxd_prop)
+set_prop(emdlogger, debug_mdlogger_prop)
+set_prop(mdlogger, debug_mdlogger_prop)
+
+get_prop(ccci_fsd, mtk_md_prop)
+get_prop(ccci_mdinit, persist_ril_prop)
+get_prop(emdlogger, persist_mtklog_prop)
+wakelock_use(ccci_fsd)
+
+r_dir_file(ccci_fsd, nvdata_file)
+r_dir_file(ccci_mdinit, nvdata_file)
+r_dir_file(ccci_fsd, protect_f_data_file)
+r_dir_file(ccci_fsd, protect_s_data_file)
+allow ccci_fsd nvdata_file:file rw_file_perms;
+allow ccci_mdinit nvdata_file:file rw_file_perms;
+allow ccci_fsd sysfs:file r_file_perms;
+allow ccci_mdinit sysfs:file r_file_perms;
+allow emdlogger sysfs:file r_file_perms;
+allow emdlogger rootfs:file r_file_perms;
+allow ccci_fsd ccci_device:chr_file rw_file_perms;
+allow ccci_mdinit ccci_device:chr_file rw_file_perms;
+allow ccci_mdinit system_data_file:file r_file_perms;
+allow radio rilproxy:unix_stream_socket connectto;
+allow radio rild_socket:sock_file write;
+allow rilproxy property_socket:sock_file write;
+allow rilproxy init:unix_stream_socket connectto;
+allow rilproxy socket_device:sock_file write;

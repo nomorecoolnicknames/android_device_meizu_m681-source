@@ -1,0 +1,120 @@
+# FORGE m681 (2026-07-20) — MTK mediacodec vendor seccomp *additional* policy.
+#
+# WHY: on the LineageOS 15.1 /vendor of this device the additional policy file
+#   /vendor/etc/seccomp_policy/mediacodec.policy is MISSING (device FACT: boot
+#   logcat of android.hardware.media.omx@1.0-service prints
+#   "Could not read additional policy file '/vendor/etc/seccomp_policy/mediacodec.policy'").
+#   omx then runs with only the AOSP base policy; the MTK OMX codec plugins
+#   (libMtkOmx*Dec/Enc.so) hit a syscall the base policy does not allow -> SIGSYS ->
+#   log_sigsys_handler -> under the boot memory-pressure burst the omx service
+#   crashes, debuggerd forks crash_dump, and the fan-out storms the phone.
+#
+# ARCH: omx@1.0-service is 32-bit ARM on this device (device FACT: minijail logged
+#   "allowing syscall: fcntl64" — fcntl64 is a 32-bit-ARM-only syscall). Syscall
+#   names below are the 32-bit ARM (eabi) set. minijail skips names it cannot
+#   resolve, so entries are additive/union with the base policy — never a downgrade.
+#
+# PROVENANCE: the first block is the MTK mediacodec seccomp policy shipped by
+#   Flyme 6.2.0.2A (system/etc/seccomp_policy/mediacodec-seccomp.policy), the OEM
+#   ROM these same libMtkOmx*.so plugins came from. The device's own runtime
+#   "allowing syscall:" list (clock_gettime, connect, fcntl64, socket, writev) is a
+#   subset of this block, confirming it is the right policy for this OMX build.
+#
+# Format: "<syscall>: 1" = allow. This file is *added* to the base policy the omx
+#   service already loads from /system/etc/seccomp_policy/mediacodec.policy.
+
+# ---- MTK mediacodec base (from Flyme 6.2.0.2A, descending call frequency) ----
+futex: 1
+ioctl: 1
+write: 1
+prctl: 1
+clock_gettime: 1
+getpriority: 1
+read: 1
+close: 1
+writev: 1
+dup: 1
+ppoll: 1
+mmap2: 1
+munmap: 1
+mprotect: 1
+madvise: 1
+openat: 1
+sigaltstack: 1
+clone: 1
+setpriority: 1
+getuid32: 1
+fstat64: 1
+pread64: 1
+faccessat: 1
+readlinkat: 1
+exit: 1
+rt_sigprocmask: 1
+set_tid_address: 1
+restart_syscall: 1
+exit_group: 1
+rt_sigreturn: 1
+pipe2: 1
+gettimeofday: 1
+sched_yield: 1
+nanosleep: 1
+lseek: 1
+sched_get_priority_max: 1
+sched_get_priority_min: 1
+statfs64: 1
+sched_setscheduler: 1
+fstatat64: 1
+ugetrlimit: 1
+
+# MTK video-extend plugins opendir(/system/lib/extend)
+getdents64: 1
+
+# for bsp and tk only
+_llseek: 1
+sched_getparam: 1
+pselect6: 1
+sched_getscheduler: 1
+sched_setaffinity: 1
+sendto: 1
+recvfrom: 1
+
+# for attaching to debuggerd on process crash
+sigaction: 1
+tgkill: 1
+socket: 1
+connect: 1
+fcntl64: 1
+rt_tgsigqueueinfo: 1
+mlock: 1
+munlock: 1
+setsockopt: 1
+setrlimit: 1
+
+# ---- Android 8.1 codec extras (safe superset; standard 32-bit ARM syscalls a
+# ---- MtkOmx 8.1 build may reach that the Nougat policy above predates). These
+# ---- only relax; unknown names are skipped by minijail.
+gettid: 1
+getpid: 1
+tkill: 1
+rt_sigtimedwait: 1
+getrandom: 1
+sched_getaffinity: 1
+sysinfo: 1
+mremap: 1
+msync: 1
+dup3: 1
+epoll_create1: 1
+epoll_ctl: 1
+epoll_pwait: 1
+eventfd2: 1
+timerfd_create: 1
+timerfd_settime: 1
+ftruncate64: 1
+pwrite64: 1
+fsync: 1
+fdatasync: 1
+memfd_create: 1
+prlimit64: 1
+clock_getres: 1
+getcpu: 1
+process_vm_readv: 1

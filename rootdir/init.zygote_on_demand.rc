@@ -1,0 +1,2 @@
+# Minimal bring-up stub.
+# Keep classic zygote startup path from init.rc without vendor on-demand hooks.

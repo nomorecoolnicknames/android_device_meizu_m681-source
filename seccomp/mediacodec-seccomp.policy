@@ -1,0 +1,4 @@
+# MTK libdpframework calls sched_getscheduler() from the video encoder color
+# conversion path. Without this, scrcpy/screenrecord kill media.codec through
+# minijail before MediaCodec can return an encoder error to the client.
+sched_getscheduler: 1

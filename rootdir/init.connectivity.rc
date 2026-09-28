@@ -1,0 +1,220 @@
+# MTK connectivity .rc configure
+
+on post-fs-data
+
+
+#
+# Connectivity related device nodes & configuration (begin)
+#
+
+#/dev/ttyMT2 for Connectivity BT/FM/GPS usage
+    chmod 0660 /dev/ttyMT2
+    chown system system /dev/ttyMT2
+
+
+# GPS
+    mkdir /data/gps_mnl 0771 gps system
+    mkdir /data/mpe_mnl 0771 gps system
+    mkdir /data/misc/gps 0770 gps system
+    mkdir /data/agps_supl 0771 gps system
+    mkdir /data/agps_supl/log 0771 gps system
+    chown gps system /data/mpe_mnl
+    chown gps system /data/agps_supl
+    chown gps system /data/agps_supl/log
+    chmod 0775 /vendor/bin/MPED
+    chown gps gps /sys/class/gpsdrv/gps/pwrctl
+    chown gps gps /sys/class/gpsdrv/gps/suspend
+    chown gps gps /sys/class/gpsdrv/gps/state
+    chown gps gps /sys/class/gpsdrv/gps/pwrsave
+    chown gps gps /sys/class/gpsdrv/gps/status
+
+# WiFi
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wpa_supplicant 0770 wifi wifi
+
+# BT relayer mode used VCOM
+    chown bluetooth bluetooth /dev/ttyGS2
+    chmod 0660 /dev/ttyGS2
+
+# /dev/stpwmt, /dev/wmtWifi and /dev/stpbt do NOT exist at post-fs-data. They are
+# created by devtmpfs inside do_connectivity_driver_init() (kernel
+# common_detect/drv_init/conn_drv_init.c:59 for BT, :81 for wlan), which runs only
+# when wmt_loader issues COMBO_IOCTL_DO_MODULE_INIT on /dev/wmtdetect. Android init
+# also has no `mknod` builtin (system/core/init/builtins.cpp lists chown at :1036
+# and mkdir at :1056, no mknod), so the block that used to live here was a parse
+# error followed by four chowns failing ENOENT on nodes that did not exist.
+# Ownership is correct without any of it: device-verified 2026-07-27, the nodes
+# come up as /dev/stpbt bluetooth:bluetooth 0660 and /dev/stpwmt system:system
+# straight from ueventd.mt6755.rc:31 the moment the loader creates them.
+
+#
+# Connectivity related device nodes & configuration (end)
+#
+
+
+on init
+
+#
+# Connectivity related services (Begin)
+#
+
+# WMT
+# vendor/mediatek/combo_loader/Android.mk:64 sets LOCAL_PROPRIETARY_MODULE := true,
+# so these install under /system/vendor/bin. /system/bin/wmt_loader has never
+# existed on any build, so this service could never start -- and wmt_loader is the
+# only thing that issues COMBO_IOCTL_DO_MODULE_INIT, which is the only thing that
+# creates /dev/stpwmt, /dev/wmtWifi and /dev/stpbt. That is why Bluetooth had no
+# device node at all and the adapter fell straight back to OFF, and why there was
+# no wlan0 either. Device-verified 2026-07-27: init.svc.wmt_loader was empty on a
+# boot where debug.m681.wmt.start was already 1. (/vendor is a symlink to
+# /system/vendor in the ramdisk, and /vendor/bin is what the rest of this file
+# already uses: mtk_agpsd, mnld, MPED, wifi2agps.)
+service wmt_loader /vendor/bin/wmt_loader
+    class core
+    user root
+    group root
+    disabled
+    oneshot
+
+service wmt_launcher /vendor/bin/wmt_launcher -p /vendor/firmware/
+    user system
+    group system
+    class core
+    disabled
+
+on property:debug.m681.wmt.start=1
+    start wmt_loader
+    start wmt_launcher
+
+on property:sys.boot_completed=1
+    setprop debug.m681.wmt.boot_completed 1
+    start m681_conn
+    setprop debug.m681.gps.autostart boot_completed
+    start mnld
+    start agpsd
+    start MPED
+    start wifi2agps
+
+on property:service.wcn.driver.ready=yes
+    setprop debug.m681.wmt.ready 1
+    start m681_wifi_kick
+
+on property:service.nvram_init=Ready
+    setprop debug.m681.wmt.nvram_ready 1
+    # Do not start WMT here. service.nvram_init can be set more than once
+    # when nvram_daemon exits; the second early wmt_loader pass re-enters
+    # MODULE_CLEANUP before boot animation and tripped sdio_detect_exit.
+    # m681_conn/m681_wifi_kick starts WMT after sys.boot_completed.
+
+on property:service.wcn.coredump.mode=2
+start stp_dump
+
+service stp_dump /vendor/bin/stp_dump3
+    user root
+    group root
+    class core
+    disabled
+    oneshot
+
+# GPS
+service agpsd /vendor/bin/mtk_agpsd
+    class main
+    socket agpsd stream 660 gps system
+    socket agpsd2 stream 660 gps inet
+    socket agpsd3 stream 660 gps inet
+    user gps
+    group gps radio inet sdcard_r sdcard_rw misc
+    disabled
+
+service mnld /vendor/bin/mnld
+    class main
+    user gps
+    group gps inet misc sdcard_rw sdcard_r media_rw system radio
+    socket mnld stream 660 gps system
+    disabled
+
+service MPED /vendor/bin/MPED
+    class main
+    user gps
+    group gps inet misc sdcard_rw sdcard_r media_rw system
+    socket MPED stream 660 gps system
+    disabled
+
+on property:debug.m681.gps.start=1
+    start mnld
+    start agpsd
+    start MPED
+
+on property:debug.m681.gps.stop=1
+    stop MPED
+    stop agpsd
+    stop mnld
+
+#service BGW /vendor/bin/BGW
+#    user system
+#    group gps system radio
+#    class main
+
+# Wlan
+on property:wlan.driver.status=ok
+    setprop debug.m681.wifi.kick wlan0_present
+
+on property:wlan.driver.status=unloaded
+    write /dev/wmtWifi "0"
+
+on property:debug.m681.wifi.power=1
+    start m681_wifi_kick
+
+on property:debug.m681.wifi.power=0
+    write /dev/wmtWifi "0"
+
+service wifi2agps /vendor/bin/wifi2agps
+    class main
+    user wifi
+    group gps inet
+    disabled
+
+service m681_wifi_kick /system/bin/sh /system/bin/m681_wifi_kick.sh
+    class late_start
+    user root
+    group root system wifi inet
+    disabled
+    oneshot
+
+service m681_conn /system/bin/sh /sbin/m681_connectivity_autostart.sh
+    class late_start
+    user root
+    group root system wifi inet bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service p2p_supplicant /vendor/bin/hw/wpa_supplicant \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin -dd \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
+    -O/data/misc/wifi/sockets -g@android:wpa_wlan0
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin -dd \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
+    -O/data/misc/wifi/sockets -g@android:wpa_wlan0
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+#
+# Connectivity related services (End)
+#

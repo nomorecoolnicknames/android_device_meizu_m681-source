@@ -1,0 +1,65 @@
+/dev/block/mmcblk0p29 /system ext4 ro wait
+
+# Treble stage A (2026-08-24): /vendor is a REAL partition on custom(p3).
+# What follows is the pre-stage-A note, kept because it records why the
+# symlink layout existed; it is no longer the current truth.
+# LineageOS 15.1 / Oreo semi-treble: /vendor is a symlink to /system/vendor.
+# The custom(p3) partition holds Flyme Nougat vendor blobs extracted there.
+# Option A (TREBLE_PIE_ROADMAP.md §2): no repartition; vendor blobs live
+# under /system/vendor/ in the system.img.  No separate /vendor fstab entry
+# is needed in that mode — the symlink /vendor -> /system/vendor is created
+# by init from the device's init.rc.
+# Option B (future): mount p3 as /vendor directly:
+#   /dev/block/mmcblk0p3 /vendor ext4 ro wait
+# Keeping that line commented here as a reminder; activate when p3 is
+# reformatted as a standalone vendor partition with blobs directly in it.
+
+
+
+
+
+
+/dev/block/mmcblk0p31 /data ext4 noatime,nosuid,nodev,noauto_da_alloc,discard wait,check,resize
+
+/dev/block/mmcblk0p30 /cache ext4 noatime,nosuid,nodev,noauto_da_alloc,discard wait,check
+/dev/block/mmcblk0p11 /protect_f ext4 noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc wait,check,formattable
+/dev/block/mmcblk0p12 /protect_s ext4 noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc wait,check,formattable
+/dev/block/mmcblk0p7 /nvdata ext4 noatime,nosuid,nodev,noauto_da_alloc,discard wait,check,formattable
+/dev/block/mmcblk0p3 /vendor ext4 ro wait
+
+
+/dev/block/mmcblk0p5 /persistent emmc defaults defaults
+
+
+/devices/mtk-msdc.0/11240000.msdc1* auto vfat defaults voldmanaged=sdcard1:auto,encryptable=userdata
+/devices/soc/11270000.usb3_xhci* auto vfat defaults voldmanaged=usbotg:auto
+/dev/block/mmcblk0p19 /nvram emmc defaults defaults
+/dev/block/mmcblk0p8 /proinfo emmc defaults defaults
+/dev/block/mmcblk0p20 /bootloader emmc defaults defaults
+/dev/block/mmcblk0p21 /bootloader2 emmc defaults defaults
+/dev/block/mmcblk0p2 /misc emmc defaults defaults
+/dev/block/mmcblk0p22 /boot emmc defaults defaults
+/dev/block/mmcblk0p1 /recovery emmc defaults defaults
+/dev/block/mmcblk0p23 /logo emmc defaults defaults
+/dev/block/mmcblk0p4 /expdb emmc defaults defaults
+/dev/block/mmcblk0p26 /secro emmc defaults defaults
+/dev/block/mmcblk0p13 /seccfg emmc defaults defaults
+/dev/block/mmcblk0p15 /md1img emmc defaults defaults
+/dev/block/mmcblk0p16 /md1dsp emmc defaults defaults
+/dev/block/mmcblk0p17 /md1arm7 emmc defaults defaults
+/dev/block/mmcblk0p18 /md3img emmc defaults defaults
+
+/dev/block/mmcblk0p6 /ppl emmc defaults defaults
+
+
+/dev/block/mmcblk0p24 /tee1 emmc defaults defaults
+/dev/block/mmcblk0p25 /tee2 emmc defaults defaults
+
+# forge m681 2026-07-29: the device shipped with SwapTotal: 0. /dev/block/zram0
+# exists but nothing ever set its disksize, because no init .rc called
+# swapon_all. With ~1.78 GB of MemTotal and Android 9 on top, that left the
+# device thrashing (300% iowait, 10 MB MemAvailable) whenever anything leaked.
+# fs_mgr_swapon_all() writes this value to /sys/block/zram0/disksize, runs
+# /system/bin/mkswap, then swapon. Paired with "swapon_all /fstab.mt6755" in
+# init.mt6755.rc -- the fstab line alone does nothing.
+/dev/block/zram0 none swap defaults zramsize=805306368

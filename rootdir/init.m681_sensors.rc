@@ -1,0 +1,21 @@
+# M681 sensor daemon (MTK msensord)
+#
+# Opens /dev/gsensor /dev/gyroscope /dev/m_alsps_misc /dev/MAGNETIC and
+# bridges sensor IIO/input data to Android sensors HAL. Not started by
+# LineageOS by default but required for Flyme-derived sensor stack.
+
+on early-fs
+    chown system system /dev/gsensor
+    chmod 0660 /dev/gsensor
+    chown system system /dev/gyroscope
+    chmod 0660 /dev/gyroscope
+    chown system system /dev/m_alsps_misc
+    chmod 0660 /dev/m_alsps_misc
+    chown system system /dev/MAGNETIC
+    chmod 0660 /dev/MAGNETIC
+
+service msensord /system/vendor/bin/msensord
+    class core
+    user system
+    group system input
+    oneshot

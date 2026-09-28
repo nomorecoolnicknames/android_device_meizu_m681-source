@@ -1,0 +1,11 @@
+get_prop(audioserver, audiohal_prop)
+
+r_dir_file(audioserver, nvdata_file)
+allow audioserver sysfs:file r_file_perms;
+allow audioserver sysfs_dev_info:file r_file_perms;
+allow audioserver kmsg_device:chr_file w_file_perms;
+allow audioserver storage_file:dir search;
+allow audioserver storage_file:lnk_file r_file_perms;
+allow audioserver mnt_user_file:dir search;
+allow audioserver mnt_user_file:lnk_file r_file_perms;
+allow audioserver tmpfs:dir search;

@@ -1,0 +1,7 @@
+# Goodix mBack on m681. The kernel emits KEY_BACK for short taps and KEY_HOME
+# for long presses; keep it out of Generic.kl where scan code 102 is MOVE_HOME.
+key 158   BACK
+key 102   HOME
+key 139   BACK
+key 232   BACK
+key 196   HOME

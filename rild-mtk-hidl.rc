@@ -1,0 +1,28 @@
+# MTK Oreo HIDL rild service definition for m681.
+#
+# Needed because vendor/mediatek/ril/rild/Android.mk:65 has
+# `#LOCAL_INIT_RC := rild.rc` commented out, so building that rild installs no
+# init rc at all, and the AOSP rild that would have supplied one is not built
+# (ENABLE_VENDOR_RIL_SERVICE := true). device.mk filters the AOSP
+# system/vendor/etc/init/rild.rc out of PRODUCT_COPY_FILES and installs this
+# file in its place. Mirrors device/meizu/meizu_m6/rild-mtk-hidl.rc.
+#
+# `disabled`: unlike the AOSP rild.legacy.rc (class main, always autostarts),
+# this daemon is started only by the debug.m681.ril.stack=hidl trigger in
+# init.modem.rc, after MD1 reports ready. That keeps the existing stack
+# switcher authoritative and preserves the stock_proxy rollback path.
+#
+# user root (not radio): matches meizu_m6. The MTK rild touches ccci nodes and
+# NVRAM paths that the radio uid alone does not cover on this device.
+service ril-daemon /vendor/bin/hw/rild
+    # MAL's AT channel. mtkmal is a plain client: it dials this socket once a
+    # second until someone answers, and until it gets through it never listens
+    # on its own /dev/socket/mal-mfi, so rild's MFI client loops on ECONNREFUSED
+    # and the SIM and IMS managers never get an AT command through. Our libril
+    # serves this socket (see vendor/mediatek libril MAL socket server).
+    socket rild-mal stream 660 root radio
+    class main
+    user root
+    group radio cache inet misc audio log readproc wakelock system
+    capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
+    disabled

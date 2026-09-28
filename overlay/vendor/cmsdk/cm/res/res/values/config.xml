@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="config_defaultLiveDisplayMode">2</integer>
+
+    <!-- Wi-Fi/BT/hotspot tiles start MTK connsys paths before WMT/wlan0/stpbt
+         are stable and make SystemUI look like the primary crash. Keep them
+         out of the default panel; manual Settings toggles still exist. -->
+    <string name="config_defaultQuickSettingsTiles">dnd,cell,airplane,rotation,location,edit,cast,inversion</string>
+
+    <string-array name="config_externalCMServices">
+        <item>org.cyanogenmod.platform.internal.CMStatusBarManagerService</item>
+        <item>org.cyanogenmod.platform.internal.ProfileManagerService</item>
+        <item>org.cyanogenmod.platform.internal.CMTelephonyManagerService</item>
+        <item>org.cyanogenmod.platform.internal.CMHardwareService</item>
+        <item>org.cyanogenmod.platform.internal.PerformanceManagerService</item>
+        <item>org.cyanogenmod.platform.internal.WeatherManagerServiceBroker</item>
+        <item>org.cyanogenmod.platform.internal.display.LiveDisplayService</item>
+        <item>org.cyanogenmod.platform.internal.CMAudioServiceBroker</item>
+    </string-array>
+</resources>

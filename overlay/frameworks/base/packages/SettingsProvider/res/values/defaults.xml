@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- m681 bring-up builds boot without a reliable interactive setup flow yet. -->
+    <bool name="def_device_provisioned">true</bool>
+    <bool name="def_user_setup_complete">true</bool>
+</resources>

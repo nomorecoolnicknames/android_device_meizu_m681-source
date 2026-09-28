@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  VINTF Hardware Manifest — Meizu M3 Note (m681), MT6755/Helio P10
+  LineageOS 15.1 / Oreo 8.1 — A-only semi-treble.
+
+  2026-06-28 (v206 fix): the previous manifest was authored from a
+  HYPOTHESIS roadmap and its <transport> tags did NOT match the binaries
+  device.mk actually ships. That mismatch is the ROOT of system_server's
+  endless `Waiting for service android.hardware.power@1.0::IPower/default`:
+  power was wrongly declared hwbinder, so IPower::getService blocked on a
+  hwservicemanager lookup that nobody satisfies (no power -service exists on
+  this MTK family; the -impl.so does not self-register). m681 already ships
+  the correct PASSTHROUGH power set (android.hardware.power@1.0-impl +
+  power.default), so the HIDL runtime must dlopen it IN-PROCESS — i.e. power
+  must be passthrough, NOT a daemon.
+
+  This file is now a faithful mirror of the PROVEN meizu_m6 manifest
+  (device/meizu/meizu_m6/manifest.xml) — same SoC family (MT6755/MT6750),
+  same Nougat-blob legacy-HIDL strategy, same dual-SIM. The transport tag of
+  every HAL matches what m681's device.mk provides: passthrough <-> impl-only
+  (loaded in-process), hwbinder <-> a shipped -service binary. HALs whose
+  services register dynamically (gnss/drm/fingerprint/camera) are still
+  reachable via getService without a device-manifest entry; spurious
+  no-backing entries (usb) are intentionally omitted to
+  avoid post-power getService hangs — exactly as the working m6 does.
+
+  2026-07-27 (LOS 16.0): the sentence above USED to list vibrator and
+  composer as deliberate omissions. Both were wrong and both have now been
+  corrected in-tree — vibrator on 2026-07-12, composer here. Neither was a
+  "spurious no-backing entry": the backing implementation shipped in each
+  case and only the DECLARATION was missing. Do not re-apply that reasoning
+  to a HAL without first checking whether the impl is on the image.
+
+  composer, FACT: /vendor/lib{,64}/hw/android.hardware.graphics.composer@2.1
+  -impl.so is built and installed (device.mk PRODUCT_PACKAGES ships
+  android.hardware.graphics.composer@2.1-impl), but this manifest had no
+  android.hardware.graphics.composer entry, so SurfaceFlinger died with
+  `failed to get hwcomposer service` and the device never reached the
+  launcher. It is passthrough (impl-only, no -service binary exists for it on
+  this tree), so it needs arch="32+64" exactly like mapper/keymaster above.
+  Live-verified on device 2026-07-27 before being landed here.
+
+  Panel: ili9885_fhd_dsi_vdo_txd1 — do NOT change to nt35695 (l681).
+-->
+<manifest version="1.0" type="device">
+    <hal format="hidl">
+        <name>android.hardware.graphics.composer</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>2.1</version>
+        <interface>
+            <name>IComposer</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.graphics.allocator</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IAllocator</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.graphics.mapper</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IMapper</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.audio</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IDevicesFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.audio.effect</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IEffectsFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.configstore</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>ISurfaceFlingerConfigs</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.health</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IHealth</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.thermal</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IThermal</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.keymaster</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>3.0</version>
+        <interface>
+            <name>IKeymasterDevice</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- 2026-07-27: android.hardware.gatekeeper is deliberately NOT declared.
+         Device-tested (lead-run, with the user's explicit consent): a PIN
+         enrolls and verifies successfully via locksettings, no
+         /data/system/gatekeeper.*.key is ever created, and logcat carries no
+         gatekeeper traffic at all. gatekeeperd is using the synthetic-password
+         path in software; lockscreen credentials WORK and no HAL is involved.
+         The entry that used to be here declared a PASSTHROUGH IGatekeeper with
+         no android.hardware.gatekeeper@1.0-impl.so on either arch, which makes
+         getService fail hard instead of falling through, the same defect as
+         the old composer omission but in the opposite direction. Do NOT "fix" this
+         by adding the -impl: the legacy gatekeeper.mt6755.so is a symlink to
+         Trustonic libMcGatekeeper.so while this device's secure OS is
+         MicroTrust, so it would add a broken HAL to replace a working software
+         path. -->
+    <hal format="hidl">
+        <name>android.hardware.bluetooth</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IBluetoothHci</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.light</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>ILight</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.sensors</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>ISensors</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.wifi</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IWifi</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.radio</name>
+        <transport>hwbinder</transport>
+        <!-- 1.0, not 1.2. Device evidence 2026-08-25: rild logs
+             "registerService: starting android::hardware::radio::V1_0::IRadio"
+             for both slots and RIL_register reports RIL version 13. Declaring
+             1.2 here made the framework look up an interface nothing serves.
+             b88ed1b claimed this "gates nothing today"; that was untested and
+             wrong. -->
+        <version>1.0</version>
+        <interface>
+            <name>IRadio</name>
+            <instance>slot1</instance>
+            <instance>slot2</instance>
+        </interface>
+        <interface>
+            <name>ISap</name>
+            <instance>slot1</instance>
+            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.radio.deprecated</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IOemHook</name>
+            <instance>slot1</instance>
+            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.camera.provider</name>
+        <transport arch="64">passthrough</transport>
+        <version>2.4</version>
+        <interface>
+            <name>ICameraProvider</name>
+            <instance>legacy/0</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.power</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IPower</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.memtrack</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IMemtrack</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- 2026-07-12 runtime-blockers audit: vibrator is no longer a
+         "spurious no-backing entry" (see header note) — device.mk now ships
+         android.hardware.vibrator@1.0-service.mtk (vendor/mediatek/hidl/
+         vibrator, hwbinder daemon wrapping the legacy vibrator.default.so
+         module that already lives in /vendor/lib*/hw). -->
+    <hal format="hidl">
+        <name>android.hardware.vibrator</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IVibrator</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>

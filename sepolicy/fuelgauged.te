@@ -1,0 +1,7 @@
+type fuelgauged, domain;
+
+init_daemon_domain(fuelgauged)
+
+r_dir_file(fuelgauged, system_file)
+r_dir_file(fuelgauged, sysfs_type)
+allow fuelgauged sysfs_batteryinfo:file rw_file_perms;

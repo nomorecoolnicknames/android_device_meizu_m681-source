@@ -1,0 +1,41 @@
+type custom_file, file_type;
+type nvcfg_file, file_type;
+type nvdata_file, file_type, data_file_type;
+type protect_f_data_file, file_type, data_file_type;
+type protect_s_data_file, file_type, data_file_type;
+type camera_isp_device, dev_type;
+type cam_cal_device, dev_type;
+type sysfs_dev_info, fs_type, sysfs_type;
+# proc_m4u dropped — /m4u is labelled mtk_m4u_proc by the base 15.1 policy.
+type ccci_device, dev_type;
+type custom_block_device, dev_type;
+type fingerprint_device, dev_type;
+type mobicore_user_device, dev_type;
+type nvdata_device, dev_type;
+type protect_f_device, dev_type;
+type protect_s_device, dev_type;
+type stpwmt_device, dev_type;
+type stpbt_device, dev_type;
+type wmtWifi_device, dev_type;
+type fuelgauged_exec, exec_type, file_type;
+type batterywarning_exec, exec_type, file_type;
+type ccci_fsd_exec, exec_type, file_type;
+type ccci_mdinit_exec, exec_type, file_type;
+type ccci_rpcd_exec, exec_type, file_type;
+type emdlogger_exec, exec_type, file_type;
+type flashlessd_exec, exec_type, file_type;
+type gsm0710muxd_exec, exec_type, file_type;
+type gsm0710muxdmd2_exec, exec_type, file_type;
+type nvram_agent_binder_exec, exec_type, file_type;
+type mdlogger_exec, exec_type, file_type;
+type mtkrild_exec, exec_type, file_type;
+type mtkrildmd2_exec, exec_type, file_type;
+type permission_check_exec, exec_type, file_type;
+type rilproxy_exec, exec_type, file_type;
+type statusd_exec, exec_type, file_type;
+type terservice_exec, exec_type, file_type;
+type viarild_exec, exec_type, file_type;
+
+# LOS 16.0 port: Pie base policy no longer declares mtk_m4u_proc (the 15.1
+# base did — see the genfs_contexts comment). Declare it here again.
+type mtk_m4u_proc, fs_type;

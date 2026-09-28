@@ -1,0 +1,12 @@
+LineageOS 15.1 sepolicy split — vendor side.
+
+In Oreo the build system routes BOARD_SEPOLICY_DIRS into the vendor
+policy compiled into /vendor/etc/selinux/nonplat_*.  For the m681
+semi-treble build the existing flat .te files in the parent directory
+cover all required vendor domain rules (connectivity.te, modem_daemons.te,
+nvram_agent_binder.te, etc.).
+
+When migrating to a full vendor split:
+  - Move vendor-domain .te files here.
+  - Keep platform-domain .te files in ../plat/.
+  - Update BOARD_PLAT_SEPOLICY_DIRS and BOARD_SEPOLICY_DIRS accordingly.

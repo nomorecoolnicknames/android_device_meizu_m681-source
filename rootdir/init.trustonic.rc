@@ -1,0 +1,80 @@
+on init
+    #create mountpoint for persist partition
+    mkdir /persist 0771 system system
+
+on post-fs
+    chown system system /persist
+    chmod 0771 /persist
+
+    # We restorecon /persist to set SEPolicy label.
+    restorecon /persist
+
+on post-fs-data
+    # Create /data/key_provisioning dir and get proper encryption policy installed
+    # Key Installation
+    mkdir /data/key_provisioning 0771 system system
+    # Keep the registry path generic to our bring-up, but make sure it exists
+    # before Trustonic is started.
+    mkdir /data/misc/mcRegistry 0775 system system
+    mkdir /data/misc/mcRegistry/TbStorage 0775 system system
+    exec - root root -- /system/bin/sh /sbin/mcregistry-setup.sh
+    restorecon_recursive /data/misc/mcRegistry
+
+on fs
+    write /proc/bootprof "setup mobicore perms ++ (on fs)"
+    chmod 0600 /dev/mobicore
+    chown system system /dev/mobicore
+    chmod 0666 /dev/mobicore-user
+    chown system system /dev/mobicore-user
+    chmod 0666 /dev/t-base-tui
+    chown system system /dev/t-base-tui
+    # MobiCore Daemon Paths
+    export MC_AUTH_TOKEN_PATH /efs
+    # mcDriverDaemon floods logcat with scheduler INFO lines on this build.
+    # This property exists in the vendor binary and must be set before start.
+    setprop persist.sys.log_reject_level 5
+    write /proc/bootprof "start mobicore ++ (on fs)"
+    start mobicore
+    write /proc/bootprof "start mobicore -- (on fs)"
+    write /proc/bootprof "setup mobicore perms -- (on fs)"
+
+# For META/FACTORY mode
+on property:ro.crypto.state=unencrypted
+    write /proc/bootprof "create /data/misc/mcRegistry ++ (unencrypted)"
+    mkdir /data/misc/mcRegistry 0775 system system
+    mkdir /data/misc/mcRegistry/TbStorage 0775 system system
+    write /proc/bootprof "create /data/misc/mcRegistry -- (unencrypted)"
+
+# For NORMAL mode
+#on property:ro.crypto.state=encrypted
+#    write /proc/bootprof "create /data/misc/mcRegistry ++ (encrypted)"
+#    mkdir /data/misc/mcRegistry 0775 system system
+#    write /proc/bootprof "create /data/misc/mcRegistry -- (encrypted)"
+
+on property:vold.decrypt=trigger_restart_framework
+    write /proc/bootprof "create /data/misc/mcRegistry ++ (trigger_restart_framework)"
+    mkdir /data/misc/mcRegistry 0775 system system
+    mkdir /data/misc/mcRegistry/TbStorage 0775 system system
+    exec - root root -- /system/bin/sh /sbin/mcregistry-setup.sh
+    restorecon_recursive /data/misc/mcRegistry
+    write /proc/bootprof "create /data/misc/mcRegistry -- (trigger_restart_framework)"
+
+on property:hwservicemanager.ready=true
+    write /proc/bootprof "retry mobicore ++ (hwservicemanager.ready)"
+    # mobicore is oneshot and started stock-style from on fs. Re-starting it
+    # later only adds init churn and makes McDaemon spam harder to read.
+    write /proc/bootprof "retry mobicore -- (hwservicemanager.ready)"
+
+#service rda /vendor/bin/rda
+#    class main
+#    user shell
+#    group shell
+
+# Start Daemon (Registry directories should already be present)
+service mobicore /vendor/bin/mcDriverDaemon -r /vendor/etc/mcRegistry/020f0000000000000000000000000000.drbin -r /vendor/etc/mcRegistry/05120000000000000000000000000000.drbin -r /vendor/etc/mcRegistry/070b0000000000000000000000000000.drbin -r /vendor/etc/mcRegistry/020b0000000000000000000000000000.drbin -r /vendor/etc/mcRegistry/030b0000000000000000000000000000.drbin -r /vendor/etc/mcRegistry/5a7b770d08d14b8fb00f53de4173145a.drbin -r /vendor/etc/mcRegistry/05070000000000000000000000000000.drbin
+    seclabel u:r:init:s0
+    user system
+    group system
+    class core
+    disabled
+    oneshot

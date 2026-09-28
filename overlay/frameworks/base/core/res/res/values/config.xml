@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="config_automatic_brightness_available">true</bool>
+
+    <integer name="config_screenBrightnessSettingMinimum">5</integer>
+    <integer name="config_screenBrightnessSettingDefault">110</integer>
+
+    <integer-array name="config_autoBrightnessLevels">
+        <item>5</item>
+        <item>20</item>
+        <item>80</item>
+        <item>200</item>
+        <item>600</item>
+        <item>1500</item>
+        <item>4000</item>
+        <item>8000</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessLcdBacklightValues">
+        <item>8</item>
+        <item>18</item>
+        <item>35</item>
+        <item>62</item>
+        <item>96</item>
+        <item>142</item>
+        <item>190</item>
+        <item>230</item>
+        <item>255</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessButtonBacklightValues">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessKeyboardBacklightValues">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+</resources>

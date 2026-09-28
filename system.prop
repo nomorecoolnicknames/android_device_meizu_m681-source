@@ -1,0 +1,68 @@
+ro.forge.meizu.expect_codename=m681
+# RIL arguments contain a space; PRODUCT_PROPERTY_OVERRIDES tokenizes these.
+rild.libargs=-d /dev/ttyC0
+
+# M681 camera: keep preview on a conservative RRZO path while disabling
+# unstable MTK feature paths during P1/NormalPipe bring-up.
+camera.disable_zsl_mode=1
+camera.zsdmode=0
+persist.m681.camera.safe_params=1
+persist.m681.cam.safe=1
+persist.m681.cam.rel_fail=1
+persist.m681.cam.skip_set=1
+persist.m681.cam.no_torch=0
+persist.m681.cam.force640=0
+persist.m681.cam.no_fullraw=1
+persist.m681.cam.p1path=2
+persist.m681.cam.pre_p1magic=1
+persist.m681.cam.sync_tuning=1
+persist.m681.cam.deq_retry=0
+debug.featurepipe.enable=0
+debug.tworunpass2.enable=0
+debug.lowPowerVR.enable=0
+debug.pass1.pdafon=0
+debug.pass1.rawtype=0
+debug.forceFPS.enable=0
+debug.mtk_cam_zsdmfb_support=0
+debug.mtk_cam_zsdhdr_support=0
+ro.mtk_zsdhdr_support=0
+debug.camera.vfb.disable=1
+debug.camera.eis.disable=1
+debug.eis.EMEnabled=0
+debug.eis.dump=0
+debug.eisDrv.dump=0
+debug.eis.disable=1
+persist.camera.eis.enable=0
+persist.camera.eis.disable=1
+persist.camera.vfb.enable=0
+persist.camera.vfb.disable=1
+cam.dumpnpipelog.enable=0
+camera.featurepipe.dumpvfb=0
+
+# --- IMS / VoLTE, ported from the m95 lane (VOLTE_MTK_LEGACY_GUIDE.md) ------
+# Six near-identically named properties answering four different questions.
+# Read at rild startup by mtk-ril RIL_Init and by the framework's ImsManager,
+# so they must be baked in rather than set by hand - a data wipe loses those.
+#
+# "The platform supports IMS and VoLTE": read by the RIL before IMS_RILA_register.
+persist.mtk_ims_support=1
+persist.mtk_volte_support=1
+# "The user has turned VoLTE on": defaults to 0, and on 0 the RIL's imsInit sends
+# AT+EIMSVOLTE=0 to the modem itself. Measured on this device 2026-08-27: with it
+# unset rild sent that disable twice, and setting it stopped that and made rild
+# subscribe with AT+CIREG=2 instead.
+persist.mtk.volte.enable=1
+# The same answer again, for the Java half - ImsService gates turnOnIms on the
+# vendor-namespaced name, and unset it defaults to 0 and turns IMS back off.
+persist.vendor.mtk.volte.enable=1
+# Force our side of the VoLTE-available gate during bring-up. Does NOT force the
+# network on: the operator gate is measured separately and on MTS it answers yes
+# (+CIREPI: 1, nwimsvops=1, this device 2026-08-27).
+persist.dbg.volte_avail_ovr=1
+# ePDG off on purpose: with it on the vendor asks its own policy for permission
+# and the policy rejects the framework's IMS bearer request, after which the
+# framework marks the APN permanently failed.
+persist.mtk_epdg_support=0
+# Which rild socket MAL dials for its AT channel. Unset, it looks for
+# rilproxy-mal, which belongs to the ril-proxy daemon we keep disabled.
+ril.mal.socket=rild-mal
