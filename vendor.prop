@@ -1,0 +1,34 @@
+# vendor.prop — Meizu M3 Note CN (m681) / MT6755, LineageOS 20 (Android 13).
+# Lands in /vendor/build.prop (TARGET_VENDOR_PROP, BoardConfig.mk).  Only
+# properties that belong to the vendor partition under the split-property
+# rules; everything with an effect on the framework stays in system.prop.
+
+# Lesson 4 of the m95 bring-up (meizu-fleet/designs/FLEET_PORT_FROM_M95_20260924.md
+# §3, п.4), live now that this tree is Treble.
+# FACT: Build.isBuildConsistent() runs VintfObject.verifyWithoutAvb() only when
+#   IS_TREBLE_ENABLED (frameworks/base/core/java/android/os/Build.java:1254),
+#   and ro.treble.enabled follows PRODUCT_FULL_TREBLE (build/make/core/main.mk:187).
+# FACT: frameworks/base, branch meizu-legacy-vendor, skips only the KERNEL part
+#   of that check when this property is set
+#   (core/jni/android_os_VintfObject.cpp:106).  m95 carries the same line for
+#   3.18 ("No kernel entry found for kernel version 3.18").
+# Why it is needed here: the FCM-3 matrix (target-level of manifest.xml)
+#   carries kernel_config_p_4.9 (hardware/interfaces/compatibility_matrices/
+#   Android.bp:30-34).  FACT: the .config of the 4.9.188 G1.1 tree whose
+#   Image.gz-dtb this tree ships (mt6755-49/kernel-mt6755-49/.config) misses
+#   four lines of kernel/configs/p/android-4.9/android-base.config —
+#   CONFIG_USB_CONFIGFS_F_{ACC,AUDIO_SRC,FS,MIDI}=y are unset — so the kernel
+#   part of the boot-time check fails and the "internal problem" dialog would
+#   show on every start.  The daily-driver 4.4.15 is further off still.
+# CHECK after boot: no "Android System: There's an internal problem" dialog;
+#   `getprop ro.vendor.vintf.legacy_kernel` = true.
+ro.vendor.vintf.legacy_kernel=true
+
+# audio.primary.mt6755.so is a Nougat build (stock Flyme 6.2.0.2A is Android 7.0,
+# NRD90M): its audio_hw_device / audio_stream_* structs end before the fields
+# the >= 4.0 HIDL wrappers read.  hardware/interfaces (branch
+# meizu-legacy-kernel) reads this property in
+# audio/core/all-versions/default/PrimaryDevice.cpp:38-41 and reports
+# NOT_SUPPORTED for those methods instead of reading past the struct — the
+# same guard m95 runs audio@6.0 with (device/meizu/m95/vendor.prop).
+ro.vendor.audio.legacy_nougat_abi=1

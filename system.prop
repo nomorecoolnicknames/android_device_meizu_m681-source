@@ -1,0 +1,32 @@
+# system.prop — Meizu M3 Note CN (m681) / MT6755, LineageOS 20 (Android 13)
+#
+# Only properties whose effect is FACT-backed on this device are carried over
+# from the LineageOS 16 daily driver
+# (gunwest-import/m6rom16/rom-work/device/meizu/m681/system.prop).
+# The large camera / EIS / VFB knob block from that file is deliberately NOT
+# copied: both cameras are non-functional (M681_DAILY_DRIVER_STATUS.md row 15)
+# and every one of those knobs was set while chasing a 4.4 camera bug that is
+# still open. Carrying them here would be cargo cult.
+
+ro.forge.meizu.expect_codename=m681
+
+# FACT: ro.sf.lcd_density=480 in the stock Flyme 6.2.0.2A build.prop.
+ro.sf.lcd_density=480
+
+# FACT (LOS16 system.prop:2-3): the RIL argument string contains a space, so it
+# cannot go through PRODUCT_PROPERTY_OVERRIDES — it has to be in system.prop.
+rild.libargs=-d /dev/ttyC0
+
+# FACT (LOS16 lineage_m681.mk:33-38, user-confirmed on 91HEBNL163XD 2026-07-12):
+# with the full display shim cascade in place the panel is upright at
+# hwrotation=0. The earlier "panel inverted, correct with 180" note no longer
+# holds on that HWC path.
+ro.sf.hwrotation=0
+
+# Hardware navigation keys are absent on m3 note; the on-screen bar is needed.
+qemu.hw.mainkeys=0
+
+# ro.treble.enabled is NOT set here: the build writes ro.treble.enabled=true
+# into /system/build.prop from PRODUCT_FULL_TREBLE (build/make/core/main.mk:187,
+# set in lineage_m681.mk).  The line that used to pin it to false is gone with
+# the Treble switch of 2026-09-24.

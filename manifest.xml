@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  VINTF device manifest — Meizu M3 Note CN (m681), MT6755, full Treble.
+
+  2026-09-25: rewritten for the Treble switch (lineage_m681.mk,
+  PRODUCT_FULL_TREBLE_OVERRIDE := true).  PRODUCT_ENFORCE_VINTF_MANIFEST now
+  follows PRODUCT_FULL_TREBLE (build/make/core/config.mk:683-695), so this file
+  is checked against the framework compatibility matrix.
+
+  target-level 3 (FACT, reasoning of device/meizu/m95/manifest.xml, 2026-09-17):
+  Android 13 ships matrices 3..7 only (hardware/interfaces/
+  compatibility_matrices/); level 3 is the Android 9 matrix, the loosest one
+  left, and it is where a vendor built around N-era blobs belongs.
+
+  What is listed: one entry per HAL whose AOSP passthrough implementation and
+  service device.mk installs in /vendor, each wrapping the MT6755 blob named in
+  the comment.  The version map is m95's (same generation of N-era MTK blobs):
+  composer 2.1 via HWC2On1Adapter, mapper 2.1 via Gralloc0Hal, camera provider
+  2.4 legacy, audio 6.0 and 2.0 in one service.  Services that carry their own
+  VINTF fragment (wifi@1.0-service, gatekeeper@1.0-service.software,
+  drm@1.4-service.clearkey, health@2.1-service, wpa_supplicant) are NOT listed
+  here: the build merges those fragments in.
+
+  NOT listed on purpose:
+    android.hardware.radio — nothing registers IRadio yet: the RIL scheme of
+      m95 (lesson 9, librilmtk + librilimp) is not ported; declaring the HAL
+      before rild can answer for it would make telephony wait on a ghost.
+    android.hardware.biometrics.fingerprint — the Goodix HAL
+      (lib64/hw/fingerprint.default.so) misses libgf_hal/libgf_ca/libgf_algo in
+      the vendor set (closure report, TREBLE_M681_L681_20260924.md).
+  Precedent for why this matters: the LOS16 tree once declared radio 1.2 while
+  rild registered 1.0 (M681_DAILY_DRIVER_STATUS.md:269-274).
+-->
+<manifest version="1.0" type="device" target-level="3">
+    <!-- audio.primary.mt6755.so (Nougat ABI; ro.vendor.audio.legacy_nougat_abi
+         in vendor.prop).  6.0 is what the A13 client knows; 2.0 is the
+         fallback the combined service registers if 6.0 fails to load. -->
+    <hal format="hidl">
+        <name>android.hardware.audio</name>
+        <transport>hwbinder</transport>
+        <version>6.0</version>
+        <interface>
+            <name>IDevicesFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.audio.effect</name>
+        <transport>hwbinder</transport>
+        <version>6.0</version>
+        <interface>
+            <name>IEffectsFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.audio</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IDevicesFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.audio.effect</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IEffectsFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- camera.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.camera.provider</name>
+        <transport>hwbinder</transport>
+        <version>2.4</version>
+        <interface>
+            <name>ICameraProvider</name>
+            <instance>legacy/0</instance>
+        </interface>
+    </hal>
+    <!-- drm@1.0 wraps the blob plugins in /vendor/lib*/mediadrm (Widevine). -->
+    <hal format="hidl">
+        <name>android.hardware.drm</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>ICryptoFactory</name>
+            <instance>default</instance>
+        </interface>
+        <interface>
+            <name>IDrmFactory</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- gps.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.gnss</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IGnss</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- gralloc.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.graphics.allocator</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>IAllocator</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- hwcomposer.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.graphics.composer</name>
+        <transport>hwbinder</transport>
+        <version>2.1</version>
+        <interface>
+            <name>IComposer</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.graphics.mapper</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>2.1</version>
+        <interface>
+            <name>IMapper</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- keystore.mt6755.so -> libMcTeeKeymaster.so (Trustonic TEE) -->
+    <hal format="hidl">
+        <name>android.hardware.keymaster</name>
+        <transport>hwbinder</transport>
+        <version>3.0</version>
+        <interface>
+            <name>IKeymasterDevice</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- lights.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.light</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>ILight</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- served by the AOSP mediacodec service over the MTK OMX blobs
+         (libMtkOmx*.so, /vendor/etc/mtk_omx_core.cfg) -->
+    <hal format="hidl">
+        <name>android.hardware.media.omx</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IOmx</name>
+            <instance>default</instance>
+        </interface>
+        <interface>
+            <name>IOmxStore</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- memtrack.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.memtrack</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IMemtrack</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.power</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IPower</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.renderscript</name>
+        <transport arch="32+64">passthrough</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IDevice</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- sensors.mt6755.so -->
+    <hal format="hidl">
+        <name>android.hardware.sensors</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>ISensors</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.vibrator</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IVibrator</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>

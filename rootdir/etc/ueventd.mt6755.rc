@@ -1,0 +1,179 @@
+# ueventd.rc (installed as /vendor/etc/ueventd.rc) — Meizu M3 Note (m681), LOS 20 Treble.
+# Lane flash-m681, 2026-09-28: taken verbatim from rootdir/ueventd.mt6755.rc of the
+# working LOS 16 tree (los16-ct07/device/meizu/m681), the daily of this unit on 4.4.15.
+# It already carries the GPU/display nodes the m5c A13 bring-up had to add by hand
+# (m5c 2cbaf7d: /dev/mali0 0666, /dev/mtk_disp_mgr, /dev/mtkfb_vsync, /dev/sw_sync,
+# /dev/graphics/fb0).  A13 ueventd reads /vendor/etc/ueventd.rc after the system one;
+# with first_stage_mount /vendor is mounted before ueventd starts.
+#
+#change partition permission
+/dev/block/mmcblk0                                              0660    root    system
+/dev/block/mmcblk0boot0                                         0660    root    system
+/dev/block/mmcblk0boot1                                         0660    root    system
+/dev/misc-sd                                                    0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/misc2     0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/boot      0640    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/recovery  0640    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/secro     0640    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/seccfg    0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/proinfo   0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/otp       0640    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/nvram     0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/para      0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/logo      0640    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/frp       0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/ppl       0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/md1img    0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/md1dsp    0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/md1arm7   0660    root    system
+/dev/block/platform/mtk-msdc.0/11240000.msdc1/by-name/md3img    0660    root    system
+
+# OTP
+/dev/otp                  0660   system     system
+
+# Connectivity
+/dev/stpwmt               0660   system     system
+/dev/wmtdetect            0660   system     system
+
+# BT
+/dev/stpbt                0660   bluetooth  bluetooth
+
+# GPS
+/dev/stpgps               0660   gps        gps
+/dev/gps                  0660   gps        system
+
+# ANT
+/dev/stpant               0660   system     system
+
+# WIFI
+/dev/wmtWifi              0660   system     system
+
+# Fingerprint
+/dev/goodix_fp            0660   system     system
+/dev/goodix_fp_spi        0660   system     system
+
+# FMRadio
+/dev/fm                   0660   media     media
+
+# NFC
+/dev/msr3110              0666   root       root
+/dev/mt6605               0660   nfc        radio
+
+# aw8738
+/dev/aw8737               0660   media      media
+/dev/aw8738               0660   media      media
+
+# charger ic
+#/dev/bq25890     			0660   root      root
+#/dev/bq25890-user     		0660   root      root
+
+# MTK BTIF driver
+/dev/btif                 0600   system     system
+
+# Trusty driver
+/dev/trusty-ipc-dev0      0660   system     keystore
+
+# add the read write right of ttyUSB*
+/dev/bus/usb/*     	  0660   root       usb
+/dev/ttyUSB0              0660   radio      radio
+/dev/ttyUSB1              0660   radio      radio
+/dev/ttyUSB2              0660   radio      radio
+/dev/ttyUSB3              0660   radio      radio
+/dev/ttyUSB4              0660   radio      radio
+
+# Anyone can read the logs, but if they're not in the "logs"
+# group, then they'll only see log entries for their UID.
+/dev/log/ksystem          0600   root       log
+
+/dev/ccci*                0660   radio      radio
+/dev/ttyC*                0660   radio      radio
+/sys/kernel/ccci          modem_info   0644   radio       radio
+/sys/kernel/ccci          md1_postfix  0644   radio       radio
+/sys/kernel/ccci          md2_postfix  0644   radio       radio
+/dev/eemcs*               0660   radio      radio
+/dev/emd*                 0660   radio      radio
+/dev/ccci_pcm_rx          0660   audio      audio
+/dev/ccci_pcm_tx          0660   audio      audio
+/dev/ccci_aud             0660   audio      audio
+/dev/ccci2_aud            0660   audio      audio
+/dev/ccci3_aud            0660   audio      audio
+/dev/eemcs_aud            0660   audio      audio
+/dev/irtx                 0660   system     system
+/dev/ir-learning          0660   system     system
+
+# SGX device node
+/dev/pvrsrvkm             0666   root       root
+/dev/pvr_sync             0666   root       root
+
+
+/sys/devices/platform/leds-mt65xx/leds/green   delay_on      0664  system   system
+/sys/devices/platform/leds-mt65xx/leds/green   delay_off      0664  system   system
+/sys/devices/platform/leds-mt65xx/leds/red   delay_on      0664  system   system
+/sys/devices/platform/leds-mt65xx/leds/red   delay_off      0664  system   system
+/sys/devices/platform/leds-mt65xx/leds/blue   delay_on      0664  system   system
+/sys/devices/platform/leds-mt65xx/leds/blue   delay_off      0664  system   system
+
+#GPIO
+/dev/mtgpio               0600   radio      root
+
+
+#FOR VIA MODEM
+/dev/ttySDIO*             0660   radio      sdcard_rw
+/dev/ttyRB*               0660   radio      radio
+
+# Mali node
+/dev/mali                 0666   system     graphics
+/dev/mali0                0666   system     graphics
+
+# Change ION driver permission
+/dev/ion                  0666   system     graphics
+/dev/graphics/fb0         0660   system     graphics
+/dev/graphics/fb1         0660   system     graphics
+/dev/graphics/fb2         0660   system     graphics
+/dev/graphics/fb3         0660   system     graphics
+/dev/graphics/fb4         0660   system     graphics
+/dev/graphics/fb5         0660   system     graphics
+/dev/graphics/fb6         0660   system     graphics
+/dev/graphics/fb7         0660   system     graphics
+/dev/fb0                  0660   system     graphics
+/dev/fb1                  0660   system     graphics
+/dev/fb2                  0660   system     graphics
+/dev/fb3                  0660   system     graphics
+/dev/fb4                  0660   system     graphics
+/dev/fb5                  0660   system     graphics
+/dev/fb6                  0660   system     graphics
+/dev/fb7                  0660   system     graphics
+/dev/mtk_disp_mgr         0660   system     graphics
+/dev/mtkfb_vsync          0660   system     graphics
+/dev/sw_sync              0660   system     graphics
+/dev/mtk_disp             0444   system     graphics
+/dev/MTK_SMI              0660   system     camera
+/dev/Vcodec               0660   system     media
+/dev/camera-sysram        0660   system     camera
+/dev/camera-isp           0660   system     camera
+/dev/camera-fdvt          0660   system     camera
+/dev/camera-pipemgr       0660   system     camera
+/dev/kd_camera_hw         0660   system     camera
+/dev/kd_camera_flashlight 0660   system     camera
+/dev/kd_camera_hw_bus2    0660   system     camera
+/dev/stmvl6180            0660   system     camera
+/dev/FM50AF               0660   system     camera
+/dev/DW9718AF             0660   system     camera
+/dev/GT9762AF             0660   system     camera
+/dev/CAM_CAL_DRV          0660   system     camera
+/dev/CAM_CAL_DRV1         0660   system     camera
+/dev/CAM_CAL_DRV2         0660   system     camera
+/dev/gt24c64a_qtech       0660   system     camera
+/dev/gt24c64a_ofilm       0660   system     camera
+/dev/s5k5e8_eeprom        0660   system     camera
+
+#touch
+/dev/touch                0660   root       system
+/dev/hotknot              0660   root       system
+
+#hang_detect
+/dev/RT_Monitor           0600   system     system
+/dev/kick_powerkey        0600   system     system
+
+#MTK In-House TEE
+/dev/ttyACM0              0660   radio      radio

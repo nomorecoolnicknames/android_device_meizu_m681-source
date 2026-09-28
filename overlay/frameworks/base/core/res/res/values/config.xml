@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Framework overlay — Meizu M3 Note CN (m681).
+
+  Carried verbatim from the LineageOS 16 daily driver
+  /srv/forge/android/gunwest-import/m6rom16/rom-work/device/meizu/m681/overlay/frameworks/base/core/res/res/values/config.xml
+  (these curves are in daily use on this exact panel since 2026-07-27,
+  M681_DAILY_DRIVER_STATUS.md row 2).
+
+  All seven resource names were checked against this tree's
+  frameworks/base/core/res/res/values/{config,symbols}.xml before being copied;
+  none of them was renamed or removed in Android 13.
+
+  Nothing speculative has been added. In particular the panel model for m681 is
+  not recorded anywhere in the campaign factbase, so no panel-specific tuning
+  (refresh rate, DOZE, color modes) is asserted here.
+-->
+<resources>
+    <bool name="config_automatic_brightness_available">true</bool>
+
+    <integer name="config_screenBrightnessSettingMinimum">5</integer>
+    <integer name="config_screenBrightnessSettingDefault">110</integer>
+
+    <integer-array name="config_autoBrightnessLevels">
+        <item>5</item>
+        <item>20</item>
+        <item>80</item>
+        <item>200</item>
+        <item>600</item>
+        <item>1500</item>
+        <item>4000</item>
+        <item>8000</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessLcdBacklightValues">
+        <item>8</item>
+        <item>18</item>
+        <item>35</item>
+        <item>62</item>
+        <item>96</item>
+        <item>142</item>
+        <item>190</item>
+        <item>230</item>
+        <item>255</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessButtonBacklightValues">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessKeyboardBacklightValues">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+</resources>

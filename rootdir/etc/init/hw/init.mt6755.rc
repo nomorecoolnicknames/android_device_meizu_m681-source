@@ -1,0 +1,62 @@
+# init.mt6755.rc — Meizu M3 Note (m681), LOS 20 full Treble: the minimum device
+# rc that a first boot needs to be observable.  Lane flash-m681, 2026-09-28,
+# after the m5c template (device m5c lineage-20-treble a39bd9e, 9581e35).
+#
+# Imported by init.rc as /vendor/etc/init/hw/init.${ro.hardware}.rc
+# (androidboot.hardware=mt6755 — LK puts it at the front of the cmdline).
+# The LOS 16 rc set is NOT pasted: only what a boot to adb needs, each line with
+# its source.  Modem, connectivity, cpuset, sensors, camera are still open.
+#
+# FACT that makes this file load-bearing (flash-m681-20260928.md §7): the first
+# A13 images had no /vendor/etc/init/hw at all, so nothing ran mount_all —
+# first-stage init mounts only the two first_stage_mount entries (system and
+# vendor), and /data, /cache, /nvdata, /protect_f, /protect_s stay unmounted.
+
+import /vendor/etc/init/hw/init.mt6755.usb.rc
+
+on init
+    # FACT on m5c (boot 4, 2026-09-28) and m95: the default SkiaGL RenderEngine
+    # aborts in primeShaderCache on N-era Mali DDKs; the legacy GLES
+    # RenderEngine keeps SurfaceFlinger up.  m681 has the same generation of
+    # Mali blob (r5p0).  A vendor build.prop entry is dropped, an rc setprop
+    # is honoured (m95 init.mt6797.rc).
+    setprop debug.renderengine.backend gles
+
+on fs
+    # Bring-up safety net (flash-m681 2026-09-28): arm "boot-recovery" in the
+    # BCB command field of para (p2, /misc in the fstab) as soon as the second
+    # stage runs, and clear it at boot_completed (below).  FACT (91HEBNL163XD,
+    # 2026-09-28 18:21 MSK): with "boot-recovery" in para a plain reboot lands in
+    # TWRP — the LK honours the BCB.  FACT (G1.5a): a kernel reset without it
+    # sends the LK back to the same boot, a loop that needs hands.  So any
+    # death after this point (the 4.9 boot deadline, a panic, a userspace
+    # reboot) returns to TWRP by itself.  The real node, not the by-name
+    # symlink: init's `write` opens with O_NOFOLLOW.  The flasher zeroes the
+    # 32-byte command field before the boot, so the string ends in a NUL.
+    write /dev/block/mmcblk0p2 boot-recovery
+    # The ramdisk copy of the fstab is gone after switch_root (m95 lesson,
+    # "cannot open file: '/fstab.mt6797'"); the vendor copy is the one init can
+    # read.  system and vendor carry first_stage_mount and are skipped here.
+    # /nvdata, /protect_f, /protect_s exist on the root (BoardConfig.mk
+    # BOARD_ROOT_EXTRA_FOLDERS); their entries are nofail.
+    mount_all /vendor/etc/fstab.mt6755
+
+on post-fs
+    # [LOS 16 m681 rootdir/init.mt6755.rc:102-105, on post-fs]
+    chown system system /protect_f
+    chmod 0770 /protect_f
+    chown system system /protect_s
+    chmod 0770 /protect_s
+
+on post-fs-data
+    # [LOS 16 m681 rootdir/init.mt6755.rc, on post-fs-data, and init.nvdata.rc]
+    # /data/nvram is a symlink to the nvdata partition on this device.
+    chown root system /nvdata
+    chmod 0771 /nvdata
+    symlink /nvdata /data/nvram
+    mkdir /nvdata/media 0771 media audio
+    restorecon_recursive /nvdata
+
+on property:sys.boot_completed=1
+    # Disarm the BCB safety net of `on fs` once the boot is good.
+    exec -- /system/bin/dd if=/dev/zero of=/dev/block/mmcblk0p2 bs=32 count=1
