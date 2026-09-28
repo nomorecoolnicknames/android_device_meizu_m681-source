@@ -1,0 +1,10 @@
+# Placeholder vendor sepolicy for m681.
+#
+# The build is androidboot.selinux=permissive (BoardConfig.mk cmdline) and
+# SELINUX_IGNORE_NEVERALLOWS is on, because the MTK Nougat blob set trips A13
+# public-policy neverallows wholesale -- exactly as it did on the LOS16 lane
+# (device/meizu/mt6755-common/BoardConfigCommon.mk:60-66 in the LOS16 tree).
+#
+# Nothing real can be written here until a kernel boots far enough to produce
+# a single avc denial log on this device under Android 13. Writing speculative
+# rules now would be unverifiable.

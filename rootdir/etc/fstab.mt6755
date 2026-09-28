@@ -1,0 +1,117 @@
+# fstab.mt6755 — Meizu M3 Note CN (m681), MT6755, LineageOS 20 / Android 13
+#
+# Block device map is FACT, read off the running LineageOS 16 daily driver:
+#   /srv/forge/android/gunwest-import/m6rom16/rom-work/device/meizu/m681/rootdir/fstab.mt6755
+# Partition roles cross-checked against the stock Flyme scatter
+#   /srv/forge/android/m681/Flyme6.2.0.2A/scatter.txt
+# and against meizu-fleet/factbase/mt6755_family.md:67-69
+#   (boot=p22, recovery=p1, expdb=p4, lk=p20/p21, system=p29, cache=p30).
+#
+# `by-name` symlinks do NOT exist on the 4.4 kernel (mt6755_family.md:69), so
+# every entry uses the raw mmcblk0pNN node. Do not "modernise" these to
+# /dev/block/platform/bootdevice/by-name/* without first proving the links
+# exist on whichever kernel actually boots this tree.
+# 2026-09-25, append: the two FIRST-STAGE entries are the exception — raw
+# nodes cannot work there at all (reasoning at the /system line).  The "no
+# by-name on 4.4" note rests on one LOS16 observation, `ls
+# /dev/block/platform/*/by-name/ | grep -iE "md1img|md1|modem"` returning empty
+# (m681/docs/LANE_SIMSLOT_20260803.md:731) — a grep for three names, not a
+# listing; the 4.4 DT does put msdc0 under mtk-msdc.0.  Everything after first
+# stage stays on raw nodes.
+#
+# A13 first-stage init: entries flagged `first_stage_mount` are mounted before
+# switch_root; /system must be one of them because A13's /init is only
+# reachable inside the system image (system/core/init/first_stage_mount.cpp:505-525).
+#
+# <src>                    <mnt_point>  <type>  <mnt_flags and options>                                           <fs_mgr_flags>
+
+# FIRST-STAGE ENTRIES USE by-name PATHS (2026-09-25, fleet decision; the rest
+# of this file stays on raw nodes).
+# FACT: first stage matches basename(<src>) against the uevent PARTNAME
+#   (system/core init/block_dev_initializer.cpp:79-97); a raw "mmcblk0p29" never
+#   equals "system", and on m95 that meant a 10 s wait and reboot to bootloader
+#   (m95 kernel c507946d).  basename of the by-name path IS the PARTNAME.
+# FACT: the platform by-name link is created for any platform block device with
+#   a PARTNAME, independent of boot_devices (init/devices.cpp:405-413).
+# FACT (path): both m681 kernels put msdc0 under a "mtk-msdc.0" simple-bus
+#   ("Do not put any bus before mtk-msdc, because it should be mtk-msdc.0 for
+#   partition device node usage", arch/arm64/boot/dts/mediatek/mt6755.dtsi:27-34
+#   of mt6755-49/kernel-mt6755-49 and of m681-4.4), so the link is
+#   /dev/block/platform/mtk-msdc.0/11230000.msdc0/by-name/<name> — the same
+#   path m95 mounts from (dmesg m95-boot-20260924-192234:4426) and l681 LOS 14.1
+#   used.  GPT names are the scatter names ("system", "custom").
+# HYPOTHESIS H-FS1 until the first boot on an A13-capable kernel.  Marker:
+#   dmesg "__mount(source=/dev/block/platform/mtk-msdc.0/11230000.msdc0/by-name/system,target=/system...)=0"
+#   and "... by-name/custom,target=/vendor ...)=0"; failure shows as "partition(s)
+#   not found after polling timeout" and a reboot to bootloader.
+# FALLBACK for a kernel WITHOUT PARTNAME (not measured on any m681 kernel): the
+#   by-name link would not exist at all, so switch these two lines back to
+#   /dev/block/mmcblk0p29 and /dev/block/mmcblk0p3 AND add
+#   androidboot.partition_map=mmcblk0p29,mmcblk0p29;mmcblk0p3,mmcblk0p3 to
+#   BOARD_KERNEL_CMDLINE (init/devices.cpp:191-216) — see BoardConfig.mk.
+/dev/block/platform/mtk-msdc.0/11230000.msdc0/by-name/system /system ext4 ro,barrier=1                                     wait,first_stage_mount
+
+# /vendor is a REAL partition: the stock `custom` partition, p3, 512 MiB
+# (FACT: stock scatter + raw read-back of p3, see BoardConfig.mk "Treble —
+# FULL").  Same partition the LOS16 daily driver mounts as /vendor since
+# 2026-08-24 and the same one m95 uses (mmcblk0p3, `custom`).  Mounted in the
+# first stage together with /system, by-name like /system (see above; the
+# GPT name of p3 is "custom").
+/dev/block/platform/mtk-msdc.0/11230000.msdc0/by-name/custom /vendor ext4 ro,barrier=1                                     wait,first_stage_mount
+
+/dev/block/mmcblk0p31      /data        ext4    noatime,nosuid,nodev,noauto_da_alloc,discard                      wait,check,formattable
+# /cache is nofail (lesson from the m95 bring-up, 2026-09-24).  `formattable`
+# only covers a WIPED partition (fs_mgr.cpp:1496-1498: format and retry only
+# when the partition has no filesystem).  A /cache that has one but still fails
+# to mount counts as an error, and one error makes mount_all return
+# FS_MGR_MNTALL_FAIL (system/core/fs_mgr/fs_mgr.cpp:1567, 1580, branch
+# meizu-legacy-kernel); queue_fs_event() has no branch for that code
+# (init/builtins.cpp:577-626, "Invalid code"), so ro.crypto.state is never set
+# and zygote-start never fires.  With nofail the same failure is only logged
+# ("Ignoring failure to mount an un-encryptable or wiped partition",
+# fs_mgr.cpp:1557).
+/dev/block/mmcblk0p30      /cache       ext4    noatime,nosuid,nodev,noauto_da_alloc,discard                      wait,check,formattable,nofail
+
+# MediaTek platform partitions. Kept for parity with the LOS16 tree; the MTK
+# blobs and nvram tooling look these mount points up by name.
+# /protect_f, /protect_s and /nvdata are nofail (lesson 11 of the m95 bring-up,
+# 2026-09-24; m95's own fstab carries the same flags).  Without nofail a failed
+# mount of any of them means a boot loop with no logs: one error makes
+# mount_all return FS_MGR_MNTALL_FAIL (system/core/fs_mgr/fs_mgr.cpp:1567,
+# 1580, branch meizu-legacy-kernel), init sets no ro.crypto.state and zygote
+# never starts.  With nofail the phone boots, and the log shows that NVRAM or
+# the IMEI is missing ("Ignoring failure to mount", fs_mgr.cpp:1557) instead
+# of hiding it.  `formattable` does not cover this case: it only formats a
+# partition that has no filesystem at all (fs_mgr.cpp:1496-1498).
+/dev/block/mmcblk0p11      /protect_f   ext4    noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc          wait,check,formattable,nofail
+/dev/block/mmcblk0p12      /protect_s   ext4    noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc          wait,check,formattable,nofail
+/dev/block/mmcblk0p7       /nvdata      ext4    noatime,nosuid,nodev,noauto_da_alloc,discard                      wait,check,formattable,nofail
+
+/dev/block/mmcblk0p19      /nvram       emmc    defaults                                                          defaults
+/dev/block/mmcblk0p8       /proinfo     emmc    defaults                                                          defaults
+/dev/block/mmcblk0p5       /persistent  emmc    defaults                                                          defaults
+/dev/block/mmcblk0p20      /bootloader  emmc    defaults                                                          defaults
+/dev/block/mmcblk0p21      /bootloader2 emmc    defaults                                                          defaults
+/dev/block/mmcblk0p2       /misc        emmc    defaults                                                          defaults
+/dev/block/mmcblk0p22      /boot        emmc    defaults                                                          defaults
+/dev/block/mmcblk0p1       /recovery    emmc    defaults                                                          defaults
+/dev/block/mmcblk0p23      /logo        emmc    defaults                                                          defaults
+/dev/block/mmcblk0p4       /expdb       emmc    defaults                                                          defaults
+/dev/block/mmcblk0p6       /ppl         emmc    defaults                                                          defaults
+/dev/block/mmcblk0p13      /seccfg      emmc    defaults                                                          defaults
+/dev/block/mmcblk0p15      /md1img      emmc    defaults                                                          defaults
+/dev/block/mmcblk0p16      /md1dsp      emmc    defaults                                                          defaults
+/dev/block/mmcblk0p17      /md1arm7     emmc    defaults                                                          defaults
+/dev/block/mmcblk0p18      /md3img      emmc    defaults                                                          defaults
+/dev/block/mmcblk0p24      /tee1        emmc    defaults                                                          defaults
+/dev/block/mmcblk0p25      /tee2        emmc    defaults                                                          defaults
+/dev/block/mmcblk0p26      /secro       emmc    defaults                                                          defaults
+
+# Removable storage
+/devices/mtk-msdc.0/11240000.msdc1*     auto    auto    defaults    voldmanaged=sdcard1:auto
+/devices/soc/11270000.usb3_xhci*        auto    auto    defaults    voldmanaged=usbotg:auto
+
+# zram. FACT (LOS16 fstab comment, same tree): the device shipped with
+# SwapTotal 0 because nothing ever set zram0 disksize; with ~1.78 GB MemTotal
+# and a modern Android on top that means thrashing. 768 MiB, same as LOS16.
+/dev/block/zram0           none         swap    defaults                                                          zramsize=805306368
