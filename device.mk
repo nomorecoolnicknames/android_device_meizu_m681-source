@@ -106,7 +106,7 @@ PRODUCT_COPY_FILES += \
 #   below and m681-vendor.mk:185,204-205, and all of them install to
 #   $(TARGET_COPY_OUT_VENDOR)/bin/. Meanwhile rootdir/init.connectivity.rc
 #   still declares those services at /system/bin/*, so they can never start.
-#   Owned by the BT/connectivity lane (agent kbt) — do not "fix" it by adding a
+#   Do not replace the Bluetooth transport by adding a
 #   /system/bin mirror here; the rc paths are what is wrong.
 #   The firmware set does remain under /vendor/firmware.
 PRODUCT_COPY_FILES += \
