@@ -1,4 +1,4 @@
-# Meizu M3 Note China: LineageOS 16.0
+# Meizu M3 Note (M681): LineageOS 16.0
 
 Device configuration, init rules, policy and compatibility code.
 Place at `device/meizu/m681` in the matching LineageOS source tree.
