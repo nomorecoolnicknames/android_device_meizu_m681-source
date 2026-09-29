@@ -5,9 +5,8 @@ BOARD_SECCOMP_POLICY := $(DEVICE_PATH)/seccomp
 include device/meizu/mt6755-common/BoardConfigCommon.mk
 include vendor/meizu/m681/BoardConfigVendor.mk
 
-# Factory scatter: recovery 0x8000..0x1008000 = 16 MiB. The shared
-# mt6755-common 32 MiB default exceeds this board's partition.
-# Evidence: /srv/forge/android/m681/Flyme6.2.0.2A/scatter.txt.
+# Factory recovery size is 16 MiB (scatter 0x8000..0x1008000),
+# not the shared MT6755-common 32 MiB default.
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 16777216
 
 # MTK vendor-ABI shims (mirror meizu_m6/BoardConfig.mk:58-92 — m681 previously had
