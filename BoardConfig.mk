@@ -169,7 +169,11 @@ BOARD_TAGS_OFFSET := 0x03f88000
 # is header-verified against the WORKING v205 m6-graft boot.img, so a source
 # build with m681_defconfig assembles a boot.img with the same geometry as v205.
 # vendor/cm/build/tasks/kernel.mk compiles arch/arm64/boot/Image.gz-dtb here.
-M681_M6GRAFT_KERNEL_SOURCE := /srv/forge/android/m681/kernel-m681-m6base-3.18.140/kernel-3.18
+ifeq ($(M681_SFOS_BUILD),1)
+ifeq ($(strip $(M681_KERNEL_SOURCE_OVERRIDE)$(M681_M6GRAFT_KERNEL_SOURCE)),)
+$(error Set M681_KERNEL_SOURCE_OVERRIDE or M681_M6GRAFT_KERNEL_SOURCE to the M681 m6-graft 3.18.140 source)
+endif
+endif
 TARGET_NO_KERNEL := false
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_HEADER_ARCH := arm64
