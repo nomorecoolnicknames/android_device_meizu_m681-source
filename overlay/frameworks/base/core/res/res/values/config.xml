@@ -1,20 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Framework overlay — Meizu M3 Note CN (m681).
-
-  Carried verbatim from the LineageOS 16 daily driver
-  /srv/forge/android/gunwest-import/m6rom16/rom-work/device/meizu/m681/overlay/frameworks/base/core/res/res/values/config.xml
-  (these curves are in daily use on this exact panel since 2026-07-27,
-  M681_DAILY_DRIVER_STATUS.md row 2).
-
-  All seven resource names were checked against this tree's
-  frameworks/base/core/res/res/values/{config,symbols}.xml before being copied;
-  none of them was renamed or removed in Android 13.
-
-  Nothing speculative has been added. In particular the panel model for m681 is
-  not recorded anywhere in the campaign factbase, so no panel-specific tuning
-  (refresh rate, DOZE, color modes) is asserted here.
+  M681 framework resources carried from its LineageOS 16 tree.
+  No additional panel-specific refresh, doze or colour-mode capabilities are asserted.
 -->
+
 <resources>
     <bool name="config_automatic_brightness_available">true</bool>
 

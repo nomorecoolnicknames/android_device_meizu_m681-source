@@ -1,29 +1,5 @@
-# fstab.mt6755 — Meizu M3 Note CN (m681), MT6755, LineageOS 20 / Android 13
-#
-# Block device map is FACT, read off the running LineageOS 16 daily driver:
-#   /srv/forge/android/gunwest-import/m6rom16/rom-work/device/meizu/m681/rootdir/fstab.mt6755
-# Partition roles cross-checked against the stock Flyme scatter
-#   /srv/forge/android/m681/Flyme6.2.0.2A/scatter.txt
-# and against meizu-fleet/factbase/mt6755_family.md:67-69
-#   (boot=p22, recovery=p1, expdb=p4, lk=p20/p21, system=p29, cache=p30).
-#
-# `by-name` symlinks do NOT exist on the 4.4 kernel (mt6755_family.md:69), so
-# every entry uses the raw mmcblk0pNN node. Do not "modernise" these to
-# /dev/block/platform/bootdevice/by-name/* without first proving the links
-# exist on whichever kernel actually boots this tree.
-# 2026-09-25, append: the two FIRST-STAGE entries are the exception — raw
-# nodes cannot work there at all (reasoning at the /system line).  The "no
-# by-name on 4.4" note rests on one LOS16 observation, `ls
-# /dev/block/platform/*/by-name/ | grep -iE "md1img|md1|modem"` returning empty
-# (m681/docs/LANE_SIMSLOT_20260803.md:731) — a grep for three names, not a
-# listing; the 4.4 DT does put msdc0 under mtk-msdc.0.  Everything after first
-# stage stays on raw nodes.
-#
-# A13 first-stage init: entries flagged `first_stage_mount` are mounted before
-# switch_root; /system must be one of them because A13's /init is only
-# reachable inside the system image (system/core/init/first_stage_mount.cpp:505-525).
-#
-# <src>                    <mnt_point>  <type>  <mnt_flags and options>                                           <fs_mgr_flags>
+# M681 first-stage /system and /vendor mounts use by-name nodes before switch_root.
+# Later mounts retain the board raw-node mapping. Verify by-name support in the selected kernel.
 
 # FIRST-STAGE ENTRIES USE by-name PATHS (2026-09-25, fleet decision; the rest
 # of this file stays on raw nodes).

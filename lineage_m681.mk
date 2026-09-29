@@ -24,28 +24,8 @@ PRODUCT_MANUFACTURER := Meizu
 
 PRODUCT_GMS_CLIENTID_BASE := android-meizu
 
-# ---------------------------------------------------------------------------
-# Shipping API level + Treble.
-#
-# FACT: the newest stock image on disk is Flyme 6.2.0.2A, and its
-#   /srv/forge/android/m681/Flyme6.2.0.2A/system/build.prop reads
-#     ro.build.version.sdk=24
-#     ro.build.version.release=7.0
-#     ro.build.id=NRD90M
-#     ro.build.fingerprint=Meizu/meizu_m3note/m3note:7.0/NRD90M/1510540088:user/release-keys
-#   i.e. the vendor blob set this tree ships is API 24 / Nougat.  24 stays the
-#   honest value (ro.product.first_api_level).
-#
-# Full Treble is switched on explicitly (owner directive 2026-09-24, "all fleet
-# trees Treble, like m95").  build/make/core/config.mk:669-670 reads the
-# override before the shipping level, so PRODUCT_FULL_TREBLE becomes true and
-# config.mk:683-695 derive PRODUCT_TREBLE_LINKER_NAMESPACES,
-# PRODUCT_SEPOLICY_SPLIT and PRODUCT_ENFORCE_VINTF_MANIFEST from it.  m95 does
-# the same with shipping level 25 (device/meizu/m95/BoardConfig.mk).
-# PRODUCT_USE_VNDK stays false at level 24 (config.mk:722-729 wants > 27), so
-# BOARD_VNDK_VERSION is set explicitly in BoardConfig.mk, again as on m95.
-# The /vendor partition facts are in BoardConfig.mk, block "Treble — FULL".
-# ---------------------------------------------------------------------------
+# Flyme 6.2.0.2A vendor inputs use Android 7.0 / API 24.
+# Treble and VNDK are explicitly enabled without misreporting the shipping API.
 PRODUCT_SHIPPING_API_LEVEL := 24
 PRODUCT_FULL_TREBLE_OVERRIDE := true
 
@@ -54,9 +34,7 @@ PRODUCT_CHARACTERISTICS := nosdcard
 # Boot animation matches the panel (FACT: 1080x1920, see BoardConfig.mk).
 TARGET_BOOT_ANIMATION_RES := 1080
 
-# FACT: copied verbatim from the stock Flyme 6.2.0.2A
-# /srv/forge/android/m681/Flyme6.2.0.2A/system/build.prop
-# (ro.build.description / ro.build.fingerprint).
+# Stock Flyme 6.2.0.2A build description and fingerprint.
 PRODUCT_BUILD_PROP_OVERRIDES += \
     TARGET_DEVICE=m3note \
     PRIVATE_BUILD_DESC="meizu_m3note-user 7.0 NRD90M 1510540088 release-keys"
