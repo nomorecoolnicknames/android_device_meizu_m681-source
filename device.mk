@@ -26,13 +26,7 @@ PRODUCT_SOONG_NAMESPACES += \
     device/meizu/m681 \
     vendor/meizu/m681
 
-# ---------------------------------------------------------------------------
-# Screen density
-#
-# FACT: ro.sf.lcd_density=480 in the stock Flyme 6.2.0.2A build.prop
-#   (/srv/forge/android/m681/Flyme6.2.0.2A/system/build.prop), consistent with
-#   a 1080x1920 5.5" panel => xxhdpi.
-# ---------------------------------------------------------------------------
+# 1080x1920 display, density 480 (xxhdpi).
 PRODUCT_AAPT_CONFIG := normal
 PRODUCT_AAPT_PREF_CONFIG := xxhdpi
 
